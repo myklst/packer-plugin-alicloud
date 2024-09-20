@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
-	"github.com/myklst/packer-plugin-alicloud/alicloud/datasource"
+	"github.com/myklst/packer-plugin-alicloud/datasource"
 )
 
 func main() {

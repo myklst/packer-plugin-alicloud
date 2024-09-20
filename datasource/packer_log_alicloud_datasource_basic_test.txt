@@ -1,0 +1,52 @@
+2024/09/20 17:39:02 [INFO] Packer version: 1.10.3 [go1.20.12 linux amd64]
+2024/09/20 17:39:02 [TRACE] discovering plugins in /home/user/.asdf/installs/packer/1.10.3/bin
+2024/09/20 17:39:02 [TRACE] discovering plugins in .
+2024/09/20 17:39:02 [TRACE] discovering plugins in /home/user/.config/packer/plugins
+2024/09/20 17:39:02 [INFO] Discovered potential plugin: alicloud = /home/user/.config/packer/plugins/github.com/hashicorp/alicloud/packer-plugin-alicloud_v1.1.1_x5.0_linux_amd64
+2024/09/20 17:39:02 [INFO] Discovered potential plugin: alicloud = /home/user/.config/packer/plugins/github.com/hashicorp/alicloud/packer-plugin-alicloud_v1.1.2_x5.0_linux_amd64
+2024/09/20 17:39:02 [INFO] Discovered potential plugin: ansible = /home/user/.config/packer/plugins/github.com/hashicorp/ansible/packer-plugin-ansible_v1.1.1_x5.0_linux_amd64
+2024/09/20 17:39:02 [INFO] Discovered potential plugin: openstack = /home/user/.config/packer/plugins/github.com/hashicorp/openstack/packer-plugin-openstack_v1.1.2_x5.0_linux_amd64
+2024/09/20 17:39:02 [INFO] Discovered potential plugin: scaffolding = /home/user/.config/packer/plugins/github.com/hashicorp/scaffolding/packer-plugin-scaffolding_v0.0.1-dev_x5.0_linux_amd64
+2024/09/20 17:39:02 [INFO] Discovered potential plugin: alicloud = /home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.6_x5.0_linux_amd64
+2024/09/20 17:39:02 [INFO] Discovered potential plugin: alicloud = /home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64
+2024/09/20 17:39:02 found external [image] datasource from alicloud plugin
+2024/09/20 17:39:02 found external [-packer-default-plugin-name- local] provisioner from ansible plugin
+2024/09/20 17:39:02 [INFO] found external [-packer-default-plugin-name-] builders from openstack plugin
+2024/09/20 17:39:02 [INFO] found external [my-builder] builders from scaffolding plugin
+2024/09/20 17:39:02 [INFO] found external [my-post-processor] post-processors from scaffolding plugin
+2024/09/20 17:39:02 found external [my-provisioner] provisioner from scaffolding plugin
+2024/09/20 17:39:02 found external [my-datasource] datasource from scaffolding plugin
+2024/09/20 17:39:02 [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2024/09/20 17:39:02 [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/user/.packerconfig
+2024/09/20 17:39:02 [WARN] Config file doesn't exist: /home/user/.packerconfig
+2024/09/20 17:39:02 [INFO] Setting cache directory: /home/user/.cache/packer
+2024/09/20 17:39:02 [TRACE] listing potential installations for "github.com/kid-debug/alicloud" that match "v0.0.8". plugingetter.ListInstallationsOptions{FromFolders:[]string{"/home/user/.asdf/installs/packer/1.10.3/bin", ".", "/home/user/.config/packer/plugins"}, BinaryInstallationOptions:plugingetter.BinaryInstallationOptions{APIVersionMajor:"5", APIVersionMinor:"0", OS:"linux", ARCH:"amd64", Ext:"", Checksummers:[]plugingetter.Checksummer{plugingetter.Checksummer{Type:"sha256", Hash:(*sha256.digest)(0xc000168100)}}}}
+2024/09/20 17:39:02 [TRACE] version "v0.0.6" of file "/home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.6_x5.0_linux_amd64" does not match constraint "v0.0.8"
+2024/09/20 17:39:02 [TRACE] Found the following "github.com/kid-debug/alicloud" installations: [{/home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64 v0.0.8}]
+2024/09/20 17:39:02 found external [image] datasource from alicloud plugin
+2024/09/20 17:39:02 [TRACE] validateValue: not active for access_key, so skipping
+2024/09/20 17:39:02 [TRACE] validateValue: not active for secret_key, so skipping
+2024/09/20 17:39:02 [TRACE] validateValue: not active for region, so skipping
+2024/09/20 17:39:02 [INFO] Starting external plugin /home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64 start datasource image
+2024/09/20 17:39:02 Starting plugin: /home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64 []string{"/home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64", "start", "datasource", "image"}
+2024/09/20 17:39:02 Waiting for RPC address for: /home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64
+2024/09/20 17:39:02 Received unix RPC address for /home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64: addr is /tmp/packer-plugin725933436
+2024/09/20 17:39:02 packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64 plugin: 2024/09/20 17:39:02 Plugin address: unix /tmp/packer-plugin725933436
+2024/09/20 17:39:02 packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64 plugin: 2024/09/20 17:39:02 Waiting for connection...
+2024/09/20 17:39:02 packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64 plugin: 2024/09/20 17:39:02 Serving a plugin connection...
+2024/09/20 17:39:02 packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64 plugin: 2024/09/20 17:39:02 [TRACE] starting datasource image
+2024/09/20 17:39:02 [INFO] (telemetry) Starting datasource alicloud-image
+2024/09/20 17:39:02 [INFO] (telemetry) ending alicloud-image
+2024/09/20 17:39:02 ui error: Error: Datasource.Execute failed: error querying AliCloud API: SDKError:
+   StatusCode: 404
+   Code: InvalidUsage
+   Message: code: 404, The specified Usage is not valid. request id: 179B25A0-A30B-3372-B7A4-1BA45705A004
+   Data: {"Code":"InvalidUsage","HostId":"ecs.cn-hongkong.aliyuncs.com","Message":"The specified Usage is not valid.","Recommend":"https://api.alibabacloud.com/troubleshoot?intl_lang=EN_US&q=InvalidUsage&product=Ecs&requestId=179B25A0-A30B-3372-B7A4-1BA45705A004","RequestId":"179B25A0-A30B-3372-B7A4-1BA45705A004","statusCode":404}
+
+
+  on ./alicloud_datasource_basic_test.pkr.hcl line 26:
+  (source code not available)
+
+2024/09/20 17:39:02 [INFO] (telemetry) Finalizing.
+2024/09/20 17:39:03 waiting for all plugin processes to complete...
+2024/09/20 17:39:03 /home/user/.config/packer/plugins/github.com/kid-debug/alicloud/packer-plugin-alicloud_v0.0.8_x5.0_linux_amd64: plugin process exited
