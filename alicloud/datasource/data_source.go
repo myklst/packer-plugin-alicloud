@@ -6,7 +6,6 @@ package datasource
 
 import (
 	"fmt"
-	"os"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
 	openapiutil "github.com/alibabacloud-go/openapi-util/service"
@@ -25,6 +24,8 @@ type Datasource struct {
 }
 
 type Config struct {
+	AccessId           string `mapstructure:"AccessId" required:"true"`
+	AccessKey          string `mapstructure:"AccessKey" required:"true"`
 	ImageId            string `mapstructure:"imageId" required:"true"`
 	Region             string `mapstructure:"region" required:"true"`
 	ImageFamily        string `mapstructure:"imageFamily" required:"true"`
@@ -129,8 +130,8 @@ func getFilteredImage(resp map[string]interface{}) (DatasourceOutput, error) {
 
 func (d *Datasource) createAliCloudClient() (*openapi.Client, error) {
 	config := &openapi.Config{
-		AccessKeyId:     tea.String(os.Getenv("ALIBABA_CLOUD_ACCESS_KEY_ID")),
-		AccessKeySecret: tea.String(os.Getenv("ALIBABA_CLOUD_ACCESS_KEY_SECRET")),
+		AccessKeyId:     tea.String(d.config.AccessId),
+		AccessKeySecret: tea.String(d.config.AccessKey),
 		Endpoint:        tea.String(fmt.Sprintf("ecs.%s.aliyuncs.com", d.config.Region)),
 	}
 	return openapi.NewClient(config)
