@@ -3,19 +3,21 @@
 
 package main
 
-import "github.com/myklst/packer-plugin-alicloud/alicloud"
+import (
+	"fmt"
+	"os"
+
+	"github.com/hashicorp/packer-plugin-sdk/plugin"
+	"github.com/myklst/packer-plugin-alicloud/alicloud/datasource"
+)
 
 func main() {
-	// pps := plugin.NewSet()
-	// pps.RegisterDatasource("datasource", new(alicloud.Datasource))
-	// pps.SetVersion(version.PluginVersion)
-	// err := pps.Run()
-	// if err != nil {
-	// 	fmt.Fprintln(os.Stderr, err.Error())
-	// 	os.Exit(1)
-	// }
-	err := alicloud.GetTEE()
+	pps := plugin.NewSet()
+	pps.RegisterDatasource("datasource", new(datasource.Datasource))
+	// pps.SetVersion("v0.0.2")
+	err := pps.Run()
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 	}
 }
