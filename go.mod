@@ -8,7 +8,7 @@ require (
 	github.com/alibabacloud-go/tea v1.2.2
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.7
 	github.com/hashicorp/hcl/v2 v2.19.1
-	github.com/hashicorp/packer-plugin-sdk v0.5.4
+	github.com/hashicorp/packer-plugin-sdk v0.5.2
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/zclconf/go-cty v1.13.3
@@ -76,3 +76,5 @@ require (
 	gopkg.in/ini.v1 v1.56.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
+
+replace github.com/zclconf/go-cty => github.com/nywilken/go-cty v1.13.3 // added by packer-sdc fix as noted in github.com/hashicorp/packer-plugin-sdk/issues/187
