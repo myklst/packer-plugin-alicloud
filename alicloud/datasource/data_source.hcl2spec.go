@@ -10,6 +10,8 @@ import (
 // FlatConfig is an auto-generated flat version of Config.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatConfig struct {
+	AccessId           *string `mapstructure:"AccessId" required:"true" cty:"AccessId" hcl:"AccessId"`
+	AccessKey          *string `mapstructure:"AccessKey" required:"true" cty:"AccessKey" hcl:"AccessKey"`
 	ImageId            *string `mapstructure:"imageId" required:"true" cty:"imageId" hcl:"imageId"`
 	Region             *string `mapstructure:"region" required:"true" cty:"region" hcl:"region"`
 	ImageFamily        *string `mapstructure:"imageFamily" required:"true" cty:"imageFamily" hcl:"imageFamily"`
@@ -31,6 +33,8 @@ func (*Config) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec }
 // The decoded values from this spec will then be applied to a FlatConfig.
 func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
+		"AccessId":           &hcldec.AttrSpec{Name: "AccessId", Type: cty.String, Required: false},
+		"AccessKey":          &hcldec.AttrSpec{Name: "AccessKey", Type: cty.String, Required: false},
 		"imageId":            &hcldec.AttrSpec{Name: "imageId", Type: cty.String, Required: false},
 		"region":             &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
 		"imageFamily":        &hcldec.AttrSpec{Name: "imageFamily", Type: cty.String, Required: false},
