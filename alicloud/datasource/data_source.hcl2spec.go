@@ -10,15 +10,15 @@ import (
 // FlatConfig is an auto-generated flat version of Config.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatConfig struct {
-	AccessId           *string `mapstructure:"AccessId" required:"true" cty:"AccessId" hcl:"AccessId"`
-	AccessKey          *string `mapstructure:"AccessKey" required:"true" cty:"AccessKey" hcl:"AccessKey"`
-	ImageId            *string `mapstructure:"imageId" required:"true" cty:"imageId" hcl:"imageId"`
-	Region             *string `mapstructure:"region" required:"true" cty:"region" hcl:"region"`
-	ImageFamily        *string `mapstructure:"imageFamily" required:"true" cty:"imageFamily" hcl:"imageFamily"`
-	IsSupportCloudinit *string `mapstructure:"isSupportCloudinit" required:"true" cty:"isSupportCloudinit" hcl:"isSupportCloudinit"`
-	OSType             *string `mapstructure:"osType" required:"true" cty:"osType" hcl:"osType"`
-	Architecture       *string `mapstructure:"architecture" required:"true" cty:"architecture" hcl:"architecture"`
-	Usage              *string `mapstructure:"usage" required:"true" cty:"usage" hcl:"usage"`
+	AccessId     *string `mapstructure:"access_key" required:"true" cty:"access_key" hcl:"access_key"`
+	AccessKey    *string `mapstructure:"secret_key" required:"true" cty:"secret_key" hcl:"secret_key"`
+	Region       *string `mapstructure:"region" required:"true" cty:"region" hcl:"region"`
+	ImageId      *string `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
+	ImageName    *string `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
+	ImageFamily  *string `mapstructure:"image_family" cty:"image_family" hcl:"image_family"`
+	OSType       *string `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
+	Architecture *string `mapstructure:"architecture" cty:"architecture" hcl:"architecture"`
+	Usage        *string `mapstructure:"usage" cty:"usage" hcl:"usage"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -33,15 +33,15 @@ func (*Config) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec }
 // The decoded values from this spec will then be applied to a FlatConfig.
 func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"AccessId":           &hcldec.AttrSpec{Name: "AccessId", Type: cty.String, Required: false},
-		"AccessKey":          &hcldec.AttrSpec{Name: "AccessKey", Type: cty.String, Required: false},
-		"imageId":            &hcldec.AttrSpec{Name: "imageId", Type: cty.String, Required: false},
-		"region":             &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
-		"imageFamily":        &hcldec.AttrSpec{Name: "imageFamily", Type: cty.String, Required: false},
-		"isSupportCloudinit": &hcldec.AttrSpec{Name: "isSupportCloudinit", Type: cty.String, Required: false},
-		"osType":             &hcldec.AttrSpec{Name: "osType", Type: cty.String, Required: false},
-		"architecture":       &hcldec.AttrSpec{Name: "architecture", Type: cty.String, Required: false},
-		"usage":              &hcldec.AttrSpec{Name: "usage", Type: cty.String, Required: false},
+		"access_key":   &hcldec.AttrSpec{Name: "access_key", Type: cty.String, Required: false},
+		"secret_key":   &hcldec.AttrSpec{Name: "secret_key", Type: cty.String, Required: false},
+		"region":       &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
+		"image_id":     &hcldec.AttrSpec{Name: "image_id", Type: cty.String, Required: false},
+		"image_name":   &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
+		"image_family": &hcldec.AttrSpec{Name: "image_family", Type: cty.String, Required: false},
+		"os_type":      &hcldec.AttrSpec{Name: "os_type", Type: cty.String, Required: false},
+		"architecture": &hcldec.AttrSpec{Name: "architecture", Type: cty.String, Required: false},
+		"usage":        &hcldec.AttrSpec{Name: "usage", Type: cty.String, Required: false},
 	}
 	return s
 }
@@ -49,11 +49,11 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 // FlatDatasourceOutput is an auto-generated flat version of DatasourceOutput.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatDatasourceOutput struct {
-	Region       *string `mapstructure:"RegionId" cty:"RegionId" hcl:"RegionId"`
+	Region       *string `mapstructure:"regionId" cty:"regionId" hcl:"regionId"`
 	ImageId      *string `mapstructure:"imageId" cty:"imageId" hcl:"imageId"`
 	ImageFamily  *string `mapstructure:"imageFamily" cty:"imageFamily" hcl:"imageFamily"`
 	OSType       *string `mapstructure:"osType" cty:"osType" hcl:"osType"`
-	Architecture *string `mapstructure:"Architecture" cty:"Architecture" hcl:"Architecture"`
+	Architecture *string `mapstructure:"architecture" cty:"architecture" hcl:"architecture"`
 }
 
 // FlatMapstructure returns a new FlatDatasourceOutput.
@@ -68,11 +68,11 @@ func (*DatasourceOutput) FlatMapstructure() interface{ HCL2Spec() map[string]hcl
 // The decoded values from this spec will then be applied to a FlatDatasourceOutput.
 func (*FlatDatasourceOutput) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"RegionId":     &hcldec.AttrSpec{Name: "RegionId", Type: cty.String, Required: false},
+		"regionId":     &hcldec.AttrSpec{Name: "regionId", Type: cty.String, Required: false},
 		"imageId":      &hcldec.AttrSpec{Name: "imageId", Type: cty.String, Required: false},
 		"imageFamily":  &hcldec.AttrSpec{Name: "imageFamily", Type: cty.String, Required: false},
 		"osType":       &hcldec.AttrSpec{Name: "osType", Type: cty.String, Required: false},
-		"Architecture": &hcldec.AttrSpec{Name: "Architecture", Type: cty.String, Required: false},
+		"architecture": &hcldec.AttrSpec{Name: "architecture", Type: cty.String, Required: false},
 	}
 	return s
 }

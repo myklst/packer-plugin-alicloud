@@ -24,23 +24,23 @@ type Datasource struct {
 }
 
 type Config struct {
-	AccessId           string `mapstructure:"AccessId" required:"true"`
-	AccessKey          string `mapstructure:"AccessKey" required:"true"`
-	ImageId            string `mapstructure:"imageId" required:"true"`
-	Region             string `mapstructure:"region" required:"true"`
-	ImageFamily        string `mapstructure:"imageFamily" required:"true"`
-	IsSupportCloudinit string `mapstructure:"isSupportCloudinit" required:"true"`
-	OSType             string `mapstructure:"osType" required:"true"`
-	Architecture       string `mapstructure:"architecture" required:"true"`
-	Usage              string `mapstructure:"usage" required:"true"`
+	AccessId     string `mapstructure:"access_key" required:"true"`
+	AccessKey    string `mapstructure:"secret_key" required:"true"`
+	Region       string `mapstructure:"region" required:"true"`
+	ImageId      string `mapstructure:"image_id"`
+	ImageName    string `mapstructure:"image_name"`
+	ImageFamily  string `mapstructure:"image_family"`
+	OSType       string `mapstructure:"os_type"`
+	Architecture string `mapstructure:"architecture"`
+	Usage        string `mapstructure:"usage"`
 }
 
 type DatasourceOutput struct {
-	Region       string `mapstructure:"RegionId"`
+	Region       string `mapstructure:"regionId"`
 	ImageId      string `mapstructure:"imageId"`
 	ImageFamily  string `mapstructure:"imageFamily"`
 	OSType       string `mapstructure:"osType"`
-	Architecture string `mapstructure:"Architecture"`
+	Architecture string `mapstructure:"architecture"`
 }
 
 type DescribeImagesOutput struct {
@@ -53,9 +53,9 @@ type ImageList struct {
 }
 
 type Image struct {
-	ImageId      string `mapstructure:"imageId"`
-	ImageFamily  string `mapstructure:"imageFamily"`
-	OSType       string `mapstructure:"osType"`
+	ImageId      string `mapstructure:"ImageId"`
+	ImageFamily  string `mapstructure:"ImageFamily"`
+	OSType       string `mapstructure:"OsType"`
 	Architecture string `mapstructure:"Architecture"`
 }
 
@@ -76,13 +76,42 @@ func (d *Datasource) OutputSpec() hcldec.ObjectSpec {
 }
 
 func (d *Datasource) Execute() (cty.Value, error) {
-	client, err := d.createAliCloudClient()
+	client, err := openapi.NewClient(&openapi.Config{
+		AccessKeyId:     tea.String(d.config.AccessId),
+		AccessKeySecret: tea.String(d.config.AccessKey),
+		Endpoint:        tea.String(fmt.Sprintf("ecs.%s.aliyuncs.com", d.config.Region)),
+	})
 	if err != nil {
 		return cty.NullVal(cty.EmptyObject), err
 	}
 
-	params := d.createApiParams()
-	queries := d.createQueries()
+	params := &openapi.Params{
+		Action:      tea.String("DescribeImages"),
+		Version:     tea.String("2014-05-26"),
+		Protocol:    tea.String("HTTPS"),
+		Method:      tea.String("POST"),
+		AuthType:    tea.String("AK"),
+		Style:       tea.String("RPC"),
+		Pathname:    tea.String("/"),
+		ReqBodyType: tea.String("json"),
+		BodyType:    tea.String("json"),
+	}
+
+	queries := map[string]interface{}{
+		"ImageId":     tea.String(d.config.ImageId),
+		"ImageName":   tea.String(d.config.ImageId),
+		"RegionId":    tea.String(d.config.Region),
+		"ImageFamily": tea.String(d.config.ImageFamily),
+		"Usage":       tea.String(d.config.ImageFamily),
+	}
+
+	if d.config.OSType != "" {
+		queries["OSType"] = tea.String(d.config.OSType)
+	}
+
+	if d.config.Architecture != "" {
+		queries["Architecture"] = tea.String(d.config.Architecture)
+	}
 
 	// Make API request
 	runtime := &util.RuntimeOptions{}
@@ -126,37 +155,4 @@ func getFilteredImage(resp map[string]interface{}) (DatasourceOutput, error) {
 		Architecture: out.ImageList.Image[0].Architecture,
 	}
 	return output, nil
-}
-
-func (d *Datasource) createAliCloudClient() (*openapi.Client, error) {
-	config := &openapi.Config{
-		AccessKeyId:     tea.String(d.config.AccessId),
-		AccessKeySecret: tea.String(d.config.AccessKey),
-		Endpoint:        tea.String(fmt.Sprintf("ecs.%s.aliyuncs.com", d.config.Region)),
-	}
-	return openapi.NewClient(config)
-}
-
-func (d *Datasource) createApiParams() *openapi.Params {
-	return &openapi.Params{
-		Action:      tea.String("DescribeImages"),
-		Version:     tea.String("2014-05-26"),
-		Protocol:    tea.String("HTTPS"),
-		Method:      tea.String("POST"),
-		AuthType:    tea.String("AK"),
-		Style:       tea.String("RPC"),
-		Pathname:    tea.String("/"),
-		ReqBodyType: tea.String("json"),
-		BodyType:    tea.String("json"),
-	}
-}
-
-func (d *Datasource) createQueries() map[string]interface{} {
-	return map[string]interface{}{
-		"ImageId":      tea.String(d.config.ImageId),
-		"RegionId":     tea.String(d.config.Region),
-		"ImageFamily":  tea.String(d.config.ImageFamily),
-		"OSType":       tea.String(d.config.OSType),
-		"Architecture": tea.String(d.config.Architecture),
-	}
 }

@@ -70,11 +70,12 @@ func GetTEE() (_err error) {
 
 	queries := map[string]interface{}{}
 	queries["RegionId"] = tea.String("cn-hongkong")
-	queries["ImageFamily"] = tea.String("acs:alibaba_cloud_linux_3_2104_lts_x64")
+	// queries["ImageFamily"] = tea.String("acs:alibaba_cloud_linux_3_2104_lts_x64")
+	queries["ImageName"] = tea.String("aliyun_3_x64_20G_alibase_*.vhd")
 	// queries["IsSupportCloudinit"] = tea.Bool(true)
-	queries["OSType"] = tea.String("linux")
-	queries["Architecture"] = tea.String("x86_64")
-	queries["Usage"] = tea.String("instance")
+	// queries["OSType"] = tea.String("linux")
+	// queries["Architecture"] = tea.String("x86_64")
+	// queries["Usage"] = tea.String("instance")
 
 	runtime := &util.RuntimeOptions{}
 	request := &openapi.OpenApiRequest{
@@ -100,7 +101,7 @@ func GetTEE() (_err error) {
 	if len(out.ImageList.Image) > 1 {
 		return fmt.Errorf("query return more then one result, please specific search")
 	}
-
+	logrus.Info(resp)
 	logrus.Info("Region :", out.Region)
 	logrus.Info("ImageId :", out.ImageList.Image[0].ImageId)
 	logrus.Info("ImageFamily :", out.ImageList.Image[0].ImageFamily)
