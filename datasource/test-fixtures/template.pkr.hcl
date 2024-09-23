@@ -34,7 +34,7 @@ build {
 
   provisioner "shell-local" {
     inline = [
-      "echo image_id: ${data.alicloud-image.test_image.image_name}",
+      "echo image_id: ${data.alicloud-image.test_image.image_id}",
     ]
   }
 }

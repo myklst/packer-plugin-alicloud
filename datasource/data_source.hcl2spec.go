@@ -12,10 +12,11 @@ import (
 type FlatConfig struct {
 	AccessKey    *string `mapstructure:"access_key" required:"true" cty:"access_key" hcl:"access_key"`
 	SecretKey    *string `mapstructure:"secret_key" required:"true" cty:"secret_key" hcl:"secret_key"`
-	Region       *string `mapstructure:"region_id" required:"true" cty:"region_id" hcl:"region_id"`
+	Region       *string `mapstructure:"region" required:"true" cty:"region" hcl:"region"`
+	ImageId      *string `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
 	ImageName    *string `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
 	ImageFamily  *string `mapstructure:"image_family" cty:"image_family" hcl:"image_family"`
-	OSType       *string `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
+	OsType       *string `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
 	Architecture *string `mapstructure:"architecture" cty:"architecture" hcl:"architecture"`
 	Usage        *string `mapstructure:"usage" cty:"usage" hcl:"usage"`
 }
@@ -34,7 +35,8 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
 		"access_key":   &hcldec.AttrSpec{Name: "access_key", Type: cty.String, Required: false},
 		"secret_key":   &hcldec.AttrSpec{Name: "secret_key", Type: cty.String, Required: false},
-		"region_id":    &hcldec.AttrSpec{Name: "region_id", Type: cty.String, Required: false},
+		"region":       &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
+		"image_id":     &hcldec.AttrSpec{Name: "image_id", Type: cty.String, Required: false},
 		"image_name":   &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
 		"image_family": &hcldec.AttrSpec{Name: "image_family", Type: cty.String, Required: false},
 		"os_type":      &hcldec.AttrSpec{Name: "os_type", Type: cty.String, Required: false},
@@ -47,10 +49,10 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 // FlatDatasourceOutput is an auto-generated flat version of DatasourceOutput.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatDatasourceOutput struct {
-	Region       *string `mapstructure:"region_id" cty:"region_id" hcl:"region_id"`
+	ImageId      *string `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
 	ImageName    *string `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
 	ImageFamily  *string `mapstructure:"image_family" cty:"image_family" hcl:"image_family"`
-	OSType       *string `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
+	OsType       *string `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
 	Architecture *string `mapstructure:"architecture" cty:"architecture" hcl:"architecture"`
 }
 
@@ -66,7 +68,7 @@ func (*DatasourceOutput) FlatMapstructure() interface{ HCL2Spec() map[string]hcl
 // The decoded values from this spec will then be applied to a FlatDatasourceOutput.
 func (*FlatDatasourceOutput) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"region_id":    &hcldec.AttrSpec{Name: "region_id", Type: cty.String, Required: false},
+		"image_id":     &hcldec.AttrSpec{Name: "image_id", Type: cty.String, Required: false},
 		"image_name":   &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
 		"image_family": &hcldec.AttrSpec{Name: "image_family", Type: cty.String, Required: false},
 		"os_type":      &hcldec.AttrSpec{Name: "os_type", Type: cty.String, Required: false},

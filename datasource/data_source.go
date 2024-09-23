@@ -27,25 +27,26 @@ type Datasource struct {
 type Config struct {
 	AccessKey    string `mapstructure:"access_key" required:"true"`
 	SecretKey    string `mapstructure:"secret_key" required:"true"`
-	Region       string `mapstructure:"region_id" required:"true"`
+	Region       string `mapstructure:"region" required:"true"`
+	ImageId      string `mapstructure:"image_id"`
 	ImageName    string `mapstructure:"image_name"`
 	ImageFamily  string `mapstructure:"image_family"`
-	OSType       string `mapstructure:"os_type"`
+	OsType       string `mapstructure:"os_type"`
 	Architecture string `mapstructure:"architecture"`
 	Usage        string `mapstructure:"usage"`
 }
 
 type DatasourceOutput struct {
-	Region       string `mapstructure:"region_id"`
+	ImageId      string `mapstructure:"image_id"`
 	ImageName    string `mapstructure:"image_name"`
 	ImageFamily  string `mapstructure:"image_family"`
-	OSType       string `mapstructure:"os_type"`
+	OsType       string `mapstructure:"os_type"`
 	Architecture string `mapstructure:"architecture"`
 }
 
 type DescribeImagesOutput struct {
-	ImageList ImageList `mapstructure:"Images"`
-	Region    string    `mapstructure:"RegionId"`
+	ImageList  ImageList `mapstructure:"Images"`
+	TotalCount int       `mapstructure:"TotalCount"`
 }
 
 type ImageList struct {
@@ -53,9 +54,10 @@ type ImageList struct {
 }
 
 type Image struct {
+	ImageId      string `mapstructure:"ImageId"`
 	ImageName    string `mapstructure:"ImageName"`
 	ImageFamily  string `mapstructure:"ImageFamily"`
-	OSType       string `mapstructure:"OsType"`
+	OsType       string `mapstructure:"OsType"`
 	Architecture string `mapstructure:"Architecture"`
 }
 
@@ -78,7 +80,7 @@ func (d *Datasource) Configure(raws ...interface{}) error {
 	}
 
 	if d.config.Region == "" {
-		errs = packer.MultiErrorAppend(errs, fmt.Errorf("region_id is missing"))
+		errs = packer.MultiErrorAppend(errs, fmt.Errorf("region is missing"))
 	}
 
 	if errs != nil && len(errs.Errors) > 0 {
@@ -115,13 +117,14 @@ func (d *Datasource) Execute() (cty.Value, error) {
 	}
 
 	queries := map[string]interface{}{
+		"ImageId":     tea.String(d.config.ImageId),
 		"ImageName":   tea.String(d.config.ImageName),
-		"RegionId":    tea.String(d.config.Region),
+		"Region":      tea.String(d.config.Region),
 		"ImageFamily": tea.String(d.config.ImageFamily),
 	}
 
-	if d.config.OSType != "" {
-		queries["OSType"] = tea.String(d.config.OSType)
+	if d.config.OsType != "" {
+		queries["OSType"] = tea.String(d.config.OsType)
 	}
 
 	if d.config.Architecture != "" {
@@ -152,26 +155,26 @@ func (d *Datasource) Execute() (cty.Value, error) {
 }
 
 func getFilteredImage(resp map[string]interface{}) (DatasourceOutput, error) {
-	var out DescribeImagesOutput
+	var result DescribeImagesOutput
 	var dataSourceOut DatasourceOutput
 
 	if body, ok := resp["body"].(map[string]interface{}); ok {
-		mapstructure.Decode(body, &out)
+		mapstructure.Decode(body, &result)
 	}
 
-	if len(out.ImageList.Image) == 0 {
+	if result.TotalCount == 0 {
 		return dataSourceOut, fmt.Errorf("no image found matching the filters")
 	}
 
-	if len(out.ImageList.Image) > 1 {
+	if result.TotalCount > 1 {
 		return dataSourceOut, fmt.Errorf("query return more then one result, please refine your search")
 	}
 	output := DatasourceOutput{
-		Region:       out.Region,
-		ImageName:    out.ImageList.Image[0].ImageName,
-		ImageFamily:  out.ImageList.Image[0].ImageFamily,
-		OSType:       out.ImageList.Image[0].OSType,
-		Architecture: out.ImageList.Image[0].Architecture,
+		ImageId:      result.ImageList.Image[0].ImageId,
+		ImageName:    result.ImageList.Image[0].ImageName,
+		ImageFamily:  result.ImageList.Image[0].ImageFamily,
+		OsType:       result.ImageList.Image[0].OsType,
+		Architecture: result.ImageList.Image[0].Architecture,
 	}
 	return output, nil
 }
