@@ -21,7 +21,4 @@ func main() {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
-	// if err := alicloud.GetTEE(); err != nil {
-	// 	logrus.Error(err)
-	// }
 }
