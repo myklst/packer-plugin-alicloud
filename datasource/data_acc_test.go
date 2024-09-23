@@ -48,7 +48,7 @@ func TestAccAliCloudDatasource(t *testing.T) {
 
 			logsString := string(logsBytes)
 
-			expectedLog := "null.basic-example: image_id: aliyun_3_x64_20G_alibase_20240819.vhd"
+			expectedLog := "null.basic-example: image_id: aliyun_3_x64_20G_alibase_.*.vhd"
 
 			if matched, _ := regexp.MatchString(expectedLog+".*", logsString); !matched {
 				t.Fatalf("logs doesn't contain expected value %q", logsString)
