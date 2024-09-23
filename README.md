@@ -15,7 +15,7 @@
 	- **valid values:** "windows", "linux"
 - `architecture` **(string)**
 	- **valid values:** "i386", "x86_64", "arm64"
-- `usage` **[(tring])**
+- `usage` **(string)**
 	- **valid values:** "instance", "none".
 	- Instance: The image is already in use and running on an ECS instance.
 	- None: The image is idle.
