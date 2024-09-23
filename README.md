@@ -29,6 +29,15 @@
 
 ## Example
 ```
+packer {
+  required_plugins {
+     alicloud = {
+      source  = "github.com/Kid-debug/alicloud"
+      version = "~> 0.1"
+    }
+  }
+}
+
 data "alicloud-image" "test_image" {
   access_key = "v1-gastisthisisnotmyaccesskey"
   secret_key = "v9-adftthisfathisisnotmysecretkey"
