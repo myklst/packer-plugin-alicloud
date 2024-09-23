@@ -8,24 +8,23 @@ variable "secret_key" {
   default =  "${env("ALICLOUD_SECRET_KEY")}"
 }
 
-variable "region" {
+variable "region_id" {
   type    = string
   default = "cn-hongkong"
 }
 
-# Datasource block to retrieve AliCloud image details
+variable "image_name" {
+  type    = string
+  default = "aliyun_3_x64_20G_alibase_*.vhd"
+}
+
 data "alicloud-image" "test_image" {
   access_key = var.access_key
   secret_key = var.secret_key
-  region     = "cn-hongkong"
-  image_name   = "aliyun_3_x64_20G_alibase_20240819.vhd"
+  region_id  = var.region_id
+  image_name = var.image_name
 }
 
-// locals{
-//   image_id = data.alicloud-image.test_image.image_id
-// }
-
-# Null builder to fulfill the requirement of a build block
 source "null" "basic-example" {
   communicator = "none"
 }
@@ -35,7 +34,7 @@ build {
 
   provisioner "shell-local" {
     inline = [
-      "echo image_id: ${data.alicloud-image.test_image.image_id}",
+      "echo image_id: ${data.alicloud-image.test_image.image_name}",
     ]
   }
 }

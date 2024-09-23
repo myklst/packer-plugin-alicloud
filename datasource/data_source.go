@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 //go:generate packer-sdc mapstructure-to-hcl2 -type DatasourceOutput,Config
 package datasource
 
@@ -10,6 +13,7 @@ import (
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/hcl2helper"
+	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
@@ -21,10 +25,9 @@ type Datasource struct {
 }
 
 type Config struct {
-	AccessId     string `mapstructure:"access_key" required:"true"`
-	AccessKey    string `mapstructure:"secret_key" required:"true"`
-	Region       string `mapstructure:"region" required:"true"`
-	ImageId      string `mapstructure:"image_id"`
+	AccessKey    string `mapstructure:"access_key" required:"true"`
+	SecretKey    string `mapstructure:"secret_key" required:"true"`
+	Region       string `mapstructure:"region_id" required:"true"`
 	ImageName    string `mapstructure:"image_name"`
 	ImageFamily  string `mapstructure:"image_family"`
 	OSType       string `mapstructure:"os_type"`
@@ -33,10 +36,10 @@ type Config struct {
 }
 
 type DatasourceOutput struct {
-	Region       string `mapstructure:"regionId"`
-	ImageId      string `mapstructure:"image_id"`
-	ImageFamily  string `mapstructure:"imageFamily"`
-	OSType       string `mapstructure:"osType"`
+	Region       string `mapstructure:"region_id"`
+	ImageName    string `mapstructure:"image_name"`
+	ImageFamily  string `mapstructure:"image_family"`
+	OSType       string `mapstructure:"os_type"`
 	Architecture string `mapstructure:"architecture"`
 }
 
@@ -50,7 +53,7 @@ type ImageList struct {
 }
 
 type Image struct {
-	ImageId      string `mapstructure:"ImageId"`
+	ImageName    string `mapstructure:"ImageName"`
 	ImageFamily  string `mapstructure:"ImageFamily"`
 	OSType       string `mapstructure:"OsType"`
 	Architecture string `mapstructure:"Architecture"`
@@ -65,6 +68,23 @@ func (d *Datasource) Configure(raws ...interface{}) error {
 		return fmt.Errorf("error parsing configuration: %v", err)
 	}
 
+	var errs *packer.MultiError
+	if d.config.AccessKey == "" {
+		errs = packer.MultiErrorAppend(errs, fmt.Errorf("access_key is missing"))
+	}
+
+	if d.config.SecretKey == "" {
+		errs = packer.MultiErrorAppend(errs, fmt.Errorf("secret_key is missing"))
+	}
+
+	if d.config.Region == "" {
+		errs = packer.MultiErrorAppend(errs, fmt.Errorf("region_id is missing"))
+	}
+
+	if errs != nil && len(errs.Errors) > 0 {
+		return errs
+	}
+
 	return nil
 }
 
@@ -74,8 +94,8 @@ func (d *Datasource) OutputSpec() hcldec.ObjectSpec {
 
 func (d *Datasource) Execute() (cty.Value, error) {
 	client, err := openapi.NewClient(&openapi.Config{
-		AccessKeyId:     tea.String(d.config.AccessId),
-		AccessKeySecret: tea.String(d.config.AccessKey),
+		AccessKeyId:     tea.String(d.config.AccessKey),
+		AccessKeySecret: tea.String(d.config.SecretKey),
 		Endpoint:        tea.String(fmt.Sprintf("ecs.%s.aliyuncs.com", d.config.Region)),
 	})
 	if err != nil {
@@ -95,7 +115,6 @@ func (d *Datasource) Execute() (cty.Value, error) {
 	}
 
 	queries := map[string]interface{}{
-		"ImageId":     tea.String(d.config.ImageId),
 		"ImageName":   tea.String(d.config.ImageName),
 		"RegionId":    tea.String(d.config.Region),
 		"ImageFamily": tea.String(d.config.ImageFamily),
@@ -110,7 +129,7 @@ func (d *Datasource) Execute() (cty.Value, error) {
 	}
 
 	if d.config.Usage != "" {
-		queries["Usage"] = tea.String(d.config.ImageFamily)
+		queries["Usage"] = tea.String(d.config.Usage)
 	}
 
 	// Make API request
@@ -141,15 +160,15 @@ func getFilteredImage(resp map[string]interface{}) (DatasourceOutput, error) {
 	}
 
 	if len(out.ImageList.Image) == 0 {
-		return dataSourceOut, fmt.Errorf("no found matching filters")
+		return dataSourceOut, fmt.Errorf("no image found matching the filters")
 	}
 
 	if len(out.ImageList.Image) > 1 {
-		return dataSourceOut, fmt.Errorf("query return more then one result, please specific search. Count: %d. Details: %s", len(out.ImageList.Image), out.ImageList)
+		return dataSourceOut, fmt.Errorf("query return more then one result, please refine your search")
 	}
 	output := DatasourceOutput{
 		Region:       out.Region,
-		ImageId:      out.ImageList.Image[0].ImageId,
+		ImageName:    out.ImageList.Image[0].ImageName,
 		ImageFamily:  out.ImageList.Image[0].ImageFamily,
 		OSType:       out.ImageList.Image[0].OSType,
 		Architecture: out.ImageList.Image[0].Architecture,

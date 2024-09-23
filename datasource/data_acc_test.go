@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package datasource
 
 import (
@@ -14,7 +17,7 @@ import (
 //go:embed test-fixtures/template.pkr.hcl
 var testDatasourceHCL2Basic string
 
-// Run with: PACKER_ACC=1 go test -count 1 -v ./alicloud/datasource/data_acc_test.go  -timeout=120m
+// Run with: PACKER_ACC=1 go test -count 1 -v ./datasource/data_acc_test.go  -timeout=120m
 func TestAccAliCloudDatasource(t *testing.T) {
 	// Define the test case
 	testCase := &acctest.PluginTestCase{
@@ -25,9 +28,8 @@ func TestAccAliCloudDatasource(t *testing.T) {
 		Teardown: func() error {
 			return nil
 		},
-		// Define the template used for the test (HCL template)
 		Template: testDatasourceHCL2Basic,
-		Type:     "alicloud-image", // Name of the datasource being tested
+		Type:     "alicloud-image",
 		Check: func(buildCommand *exec.Cmd, logfile string) error {
 			if buildCommand.ProcessState != nil && buildCommand.ProcessState.ExitCode() != 0 {
 				return fmt.Errorf("Bad exit code. Logfile: %s", logfile)
