@@ -169,6 +169,7 @@ func getFilteredImage(resp map[string]interface{}) (DatasourceOutput, error) {
 	if result.TotalCount > 1 {
 		return dataSourceOut, fmt.Errorf("query return more then one result, please refine your search")
 	}
+
 	output := DatasourceOutput{
 		ImageId:      result.ImageList.Image[0].ImageId,
 		ImageName:    result.ImageList.Image[0].ImageName,
@@ -176,5 +177,6 @@ func getFilteredImage(resp map[string]interface{}) (DatasourceOutput, error) {
 		OsType:       result.ImageList.Image[0].OsType,
 		Architecture: result.ImageList.Image[0].Architecture,
 	}
+
 	return output, nil
 }
