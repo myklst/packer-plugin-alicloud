@@ -17,8 +17,8 @@
 	- **valid values:** "i386", "x86_64", "arm64"
 - `usage` **(string)**
 	- **valid values:** "instance", "none".
-	- Instance: The image is already in use and running on an ECS instance.
-	- None: The image is idle.
+		- Instance: The image is already in use and running on an ECS instance.
+		- None: The image is idle.
 
 ## Output
 - `image_id` **(string)**
