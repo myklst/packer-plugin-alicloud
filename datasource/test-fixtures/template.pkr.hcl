@@ -1,12 +1,3 @@
-packer {
-  required_plugins {
-     alicloud = {
-      source  = "github.com/Kid-debug/alicloud"
-      version = "v0.0.8"
-    }
-  }
-}
-
 variable "access_key" {
   type    = string
   default = "${env("ALICLOUD_ACCESS_KEY")}"
@@ -26,20 +17,25 @@ variable "region" {
 data "alicloud-image" "test_image" {
   access_key = var.access_key
   secret_key = var.secret_key
-  region     = var.region
-  image_id   = "aliyun_3_x64_20G_alibase_*.vhd"
+  region     = "cn-hongkong"
+  image_name   = "aliyun_3_x64_20G_alibase_20240819.vhd"
 }
 
+// locals{
+//   image_id = data.alicloud-image.test_image.image_id
+// }
+
 # Null builder to fulfill the requirement of a build block
-source "null" "test" {
+source "null" "basic-example" {
   communicator = "none"
 }
 
 build {
-  sources = ["source.null.test"]
+  sources = ["source.null.basic-example"]
 
-  provisioner "file" {
-    content     = "This is a test provisioner"
-    destination = "/tmp/test_file.txt"
+  provisioner "shell-local" {
+    inline = [
+      "echo image_id: ${data.alicloud-image.test_image.image_id}",
+    ]
   }
 }

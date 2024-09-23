@@ -1,6 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 //go:generate packer-sdc mapstructure-to-hcl2 -type DatasourceOutput,Config
 package datasource
 
@@ -37,7 +34,7 @@ type Config struct {
 
 type DatasourceOutput struct {
 	Region       string `mapstructure:"regionId"`
-	ImageId      string `mapstructure:"imageId"`
+	ImageId      string `mapstructure:"image_id"`
 	ImageFamily  string `mapstructure:"imageFamily"`
 	OSType       string `mapstructure:"osType"`
 	Architecture string `mapstructure:"architecture"`
@@ -99,7 +96,7 @@ func (d *Datasource) Execute() (cty.Value, error) {
 
 	queries := map[string]interface{}{
 		"ImageId":     tea.String(d.config.ImageId),
-		"ImageName":   tea.String(d.config.ImageId),
+		"ImageName":   tea.String(d.config.ImageName),
 		"RegionId":    tea.String(d.config.Region),
 		"ImageFamily": tea.String(d.config.ImageFamily),
 	}
@@ -148,7 +145,7 @@ func getFilteredImage(resp map[string]interface{}) (DatasourceOutput, error) {
 	}
 
 	if len(out.ImageList.Image) > 1 {
-		return dataSourceOut, fmt.Errorf("query return more then one result, please specific search")
+		return dataSourceOut, fmt.Errorf("query return more then one result, please specific search. Count: %d. Details: %s", len(out.ImageList.Image), out.ImageList)
 	}
 	output := DatasourceOutput{
 		Region:       out.Region,

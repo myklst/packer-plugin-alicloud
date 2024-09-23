@@ -1,6 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package main
 
 import (
@@ -9,12 +6,13 @@ import (
 
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
 	"github.com/myklst/packer-plugin-alicloud/datasource"
+	"github.com/myklst/packer-plugin-alicloud/version"
 )
 
 func main() {
 	pps := plugin.NewSet()
 	pps.RegisterDatasource("image", new(datasource.Datasource))
-	// pps.SetVersion(version.PluginVersion)
+	pps.SetVersion(version.PluginVersion)
 	err := pps.Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())

@@ -1,5 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
 package datasource
 
 import (
@@ -48,9 +46,9 @@ func TestAccAliCloudDatasource(t *testing.T) {
 
 			logsString := string(logsBytes)
 
-			expectedLog := "alicloud-image.test_image: Retrieved image details"
+			expectedLog := "null.basic-example: image_id: aliyun_3_x64_20G_alibase_20240819.vhd"
 
-			if matched, _ := regexp.MatchString(expectedLog, logsString); !matched {
+			if matched, _ := regexp.MatchString(expectedLog+".*", logsString); !matched {
 				t.Fatalf("logs doesn't contain expected value %q", logsString)
 			}
 
