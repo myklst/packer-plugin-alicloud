@@ -21,7 +21,7 @@ variable "image_name" {
 data "alicloud-image" "test_image" {
   access_key = var.access_key
   secret_key = var.secret_key
-  region_id  = var.region_id
+  region  = var.region_id
   image_name = var.image_name
 }
 

@@ -3,18 +3,31 @@
 ## Input
 ### Required:
 
-- `access_key` (string)
-- `secret_key` (string)
-- `region_id` (string)
+- `access_key` **(string)**
+- `secret_key` **(string)**
+- `region_id` **(string)**
 
 ### Optional:
 
-- `image_name` (string)
-- `image_family` (string)
-- `os_type` (string): windows, linux
-- `architecture` (string): i386, x86_64, arm64
-- `usage` (string): instance, none. Instance - The image is already in use and running on an ECS instance,; None - The image is idle.
+- `image_name` **(string)**
+- `image_family` **(string)**
+- `os_type` **(string)**
+	- **valid values:** "windows", "linux"
+- `architecture` **(string)**
+	- **valid values:** "i386", "x86_64", "arm64"
+- `usage` **[(tring])**
+	- **valid values:** "instance", "none".
+	- Instance: The image is already in use and running on an ECS instance.
+	- None: The image is idle.
 
+## Output
+- `image_id` **(string)**
+- `image_name` **(string)**
+- `image_family` **(string)**
+- `os_type` **(string)**
+- `architecture` **(string)**
+
+## Example
 ```
 data "alicloud-image" "test_image" {
   access_key = var.access_key
@@ -23,10 +36,3 @@ data "alicloud-image" "test_image" {
   image_name = var.image_name
 }
 ```
-
-## Output
-- 	Region:       out.Region,
-	ImageName:    out.ImageList.Image[0].ImageName,
-	ImageFamily:  out.ImageList.Image[0].ImageFamily,
-	OSType:       out.ImageList.Image[0].OSType,
-	Architecture: out.ImageList.Image[0].Architecture,

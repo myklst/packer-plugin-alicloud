@@ -119,7 +119,7 @@ func (d *Datasource) Execute() (cty.Value, error) {
 	queries := map[string]interface{}{
 		"ImageId":     tea.String(d.config.ImageId),
 		"ImageName":   tea.String(d.config.ImageName),
-		"Region":      tea.String(d.config.Region),
+		"RegionId":    tea.String(d.config.Region),
 		"ImageFamily": tea.String(d.config.ImageFamily),
 	}
 
