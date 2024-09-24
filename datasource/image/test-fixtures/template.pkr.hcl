@@ -23,6 +23,10 @@ data "alicloud-image" "test_image" {
   secret_key = var.secret_key
   region  = var.region_id
   image_name = var.image_name
+
+  // tag = {
+  //   image = "web-server-dev-terratest"
+  // }
 }
 
 source "null" "basic-example" {
@@ -34,7 +38,7 @@ build {
 
   provisioner "shell-local" {
     inline = [
-      "echo image_id: ${data.alicloud-image.test_image.image_id}",
+      "echo image_id: ${data.alicloud-image.test_image.images[0].image_id}",
     ]
   }
 }

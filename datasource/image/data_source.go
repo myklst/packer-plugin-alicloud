@@ -1,17 +1,18 @@
-//go:generate packer-sdc mapstructure-to-hcl2 -type DatasourceOutput,Config
+//go:generate packer-sdc mapstructure-to-hcl2 -type DatasourceOutput,Image,Config
 package datasource
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
-	openapiutil "github.com/alibabacloud-go/openapi-util/service"
+	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v4/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/hcl2helper"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
-	"github.com/mitchellh/mapstructure"
 
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/zclconf/go-cty/cty"
@@ -22,40 +23,28 @@ type Datasource struct {
 }
 
 type Config struct {
-	AccessKey    string `mapstructure:"access_key" required:"true"`
-	SecretKey    string `mapstructure:"secret_key" required:"true"`
-	Region       string `mapstructure:"region" required:"true"`
-	ImageId      string `mapstructure:"image_id"`
-	ImageName    string `mapstructure:"image_name"`
-	ImageFamily  string `mapstructure:"image_family"`
-	OsType       string `mapstructure:"os_type"`
-	Architecture string `mapstructure:"architecture"`
-	Usage        string `mapstructure:"usage"`
+	AccessKey    string            `mapstructure:"access_key" required:"true"`
+	SecretKey    string            `mapstructure:"secret_key" required:"true"`
+	Region       string            `mapstructure:"region" required:"true"`
+	ImageId      string            `mapstructure:"image_id"`
+	ImageName    string            `mapstructure:"image_name"`
+	ImageFamily  string            `mapstructure:"image_family"`
+	OsType       string            `mapstructure:"os_type"`
+	Architecture string            `mapstructure:"architecture"`
+	Usage        string            `mapstructure:"usage"`
+	Tag          map[string]string `mapstructure:"tag"`
 }
 
 type DatasourceOutput struct {
-	ImageId      string `mapstructure:"image_id"`
-	ImageName    string `mapstructure:"image_name"`
-	ImageFamily  string `mapstructure:"image_family"`
-	OsType       string `mapstructure:"os_type"`
-	Architecture string `mapstructure:"architecture"`
-}
-
-type DescribeImagesOutput struct {
-	ImageList  ImageList `mapstructure:"Images"`
-	TotalCount int       `mapstructure:"TotalCount"`
-}
-
-type ImageList struct {
-	Image []Image `mapstructure:"Image"`
+	Images []Image `mapstructure:"images"`
 }
 
 type Image struct {
-	ImageId      string `mapstructure:"ImageId"`
-	ImageName    string `mapstructure:"ImageName"`
-	ImageFamily  string `mapstructure:"ImageFamily"`
-	OsType       string `mapstructure:"OsType"`
-	Architecture string `mapstructure:"Architecture"`
+	ImageId      string `mapstructure:"image_id"`
+	ImageName    string `mapstructure:"image_name"`
+	ImageFamily  string `mapstructure:"image_family"`
+	OSType       string `mapstructure:"os_type"`
+	Architecture string `mapstructure:"architecture"`
 }
 
 func (d *Datasource) ConfigSpec() hcldec.ObjectSpec {
@@ -91,89 +80,122 @@ func (d *Datasource) OutputSpec() hcldec.ObjectSpec {
 	return (&DatasourceOutput{}).FlatMapstructure().HCL2Spec()
 }
 
-func (d *Datasource) Execute() (cty.Value, error) {
-	client, err := openapi.NewClient(&openapi.Config{
-		AccessKeyId:     tea.String(d.config.AccessKey),
+func CreateClient(d *Datasource) (_result *ecs20140526.Client, _err error) {
+	// The project code leakage may result in the leakage of AccessKey, posing a threat to the security of all resources under the account. The following code examples are for reference only.
+	// It is recommended to use the more secure STS credential. For more credentials, please refer to: https://www.alibabacloud.com/help/en/alibaba-cloud-sdk-262060/latest/configure-credentials-378661.
+	config := &openapi.Config{
+		// Required, please ensure that the environment variables ALIBABA_CLOUD_ACCESS_KEY_ID is set.
+		AccessKeyId: tea.String(d.config.AccessKey),
+		// Required, please ensure that the environment variables ALIBABA_CLOUD_ACCESS_KEY_SECRET is set.
 		AccessKeySecret: tea.String(d.config.SecretKey),
-		Endpoint:        tea.String(fmt.Sprintf("ecs.%s.aliyuncs.com", d.config.Region)),
-	})
+	}
+	// See https://api.alibabacloud.com/product/Ecs.
+	config.Endpoint = tea.String(fmt.Sprintf("ecs.%s.aliyuncs.com", d.config.Region))
+	_result = &ecs20140526.Client{}
+	_result, _err = ecs20140526.NewClient(config)
+	return _result, _err
+}
+
+func (d *Datasource) Execute() (cty.Value, error) {
+	client, err := CreateClient(d)
 	if err != nil {
 		return cty.NullVal(cty.EmptyObject), err
 	}
 
-	params := &openapi.Params{
-		Action:      tea.String("DescribeImages"),
-		Version:     tea.String("2014-05-26"),
-		Protocol:    tea.String("HTTPS"),
-		Method:      tea.String("POST"),
-		AuthType:    tea.String("AK"),
-		Style:       tea.String("RPC"),
-		Pathname:    tea.String("/"),
-		ReqBodyType: tea.String("json"),
-		BodyType:    tea.String("json"),
+	var tags []*ecs20140526.DescribeImagesRequestTag
+	for key := range d.config.Tag {
+		tag := &ecs20140526.DescribeImagesRequestTag{
+			Key:   tea.String(key),
+			Value: tea.String(d.config.Tag[key]),
+		}
+		tags = append(tags, tag)
 	}
 
-	queries := map[string]interface{}{
-		"ImageId":     tea.String(d.config.ImageId),
-		"ImageName":   tea.String(d.config.ImageName),
-		"RegionId":    tea.String(d.config.Region),
-		"ImageFamily": tea.String(d.config.ImageFamily),
+	describeImagesRequest := &ecs20140526.DescribeImagesRequest{
+		RegionId:    tea.String(d.config.Region),
+		ImageName:   tea.String(d.config.ImageName),
+		ImageId:     tea.String(d.config.ImageId),
+		ImageFamily: tea.String(d.config.ImageFamily),
+		Tag:         tags,
 	}
 
 	if d.config.OsType != "" {
-		queries["OSType"] = tea.String(d.config.OsType)
+		describeImagesRequest.OSType = tea.String(d.config.OsType)
 	}
 
 	if d.config.Architecture != "" {
-		queries["Architecture"] = tea.String(d.config.Architecture)
+		describeImagesRequest.Architecture = tea.String(d.config.Architecture)
 	}
 
 	if d.config.Usage != "" {
-		queries["Usage"] = tea.String(d.config.Usage)
+		describeImagesRequest.Usage = tea.String(d.config.Usage)
 	}
 
 	// Make API request
+	var imgOutput DatasourceOutput
 	runtime := &util.RuntimeOptions{}
-	request := &openapi.OpenApiRequest{
-		Query: openapiutil.Query(queries),
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		// Copy the code to run, please print the return value of the API by yourself.
+		resp, err := client.DescribeImagesWithOptions(describeImagesRequest, runtime)
+		if err != nil {
+			return err
+		}
+
+		imgOutput, err = getFilteredImage(resp)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}()
+
+	if tryErr != nil {
+		var error = &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			error = _t
+		} else {
+			error.Message = tea.String(tryErr.Error())
+		}
+		// Only a printing example. Please be careful about exception handling and do not ignore exceptions directly in engineering projects.
+		// print error message
+		// Please click on the link below for diagnosis.
+		var data interface{}
+		d := json.NewDecoder(strings.NewReader(tea.StringValue(error.Data)))
+		d.Decode(&data)
+		if m, ok := data.(map[string]interface{}); ok {
+			recommend := m["Recommend"]
+			return cty.NullVal(cty.EmptyObject), fmt.Errorf(tryErr.Error(), recommend)
+		}
+
+		return cty.NullVal(cty.EmptyObject), fmt.Errorf("%s", tryErr.Error())
 	}
 
-	resp, err := client.CallApi(params, request, runtime)
-	if err != nil {
-		return cty.NullVal(cty.EmptyObject), fmt.Errorf("error querying AliCloud API: %v", err)
-	}
-
-	output, err := getFilteredImage(resp)
-	if err != nil {
-		return cty.NullVal(cty.EmptyObject), err
-	}
-
-	return hcl2helper.HCL2ValueFromConfig(output, d.OutputSpec()), nil
+	return hcl2helper.HCL2ValueFromConfig(imgOutput, d.OutputSpec()), nil
 }
 
-func getFilteredImage(resp map[string]interface{}) (DatasourceOutput, error) {
-	var result DescribeImagesOutput
+func getFilteredImage(resp *ecs20140526.DescribeImagesResponse) (DatasourceOutput, error) {
 	var dataSourceOut DatasourceOutput
 
-	if body, ok := resp["body"].(map[string]interface{}); ok {
-		mapstructure.Decode(body, &result)
-	}
-
-	if result.TotalCount == 0 {
+	if *resp.Body.TotalCount == 0 {
 		return dataSourceOut, fmt.Errorf("no image found matching the filters")
 	}
 
-	if result.TotalCount > 1 {
-		return dataSourceOut, fmt.Errorf("query return more then one result, please refine your search")
+	for _, img := range resp.Body.Images.Image {
+		image := Image{
+			ImageId:      *img.ImageId,
+			ImageName:    *img.ImageName,
+			ImageFamily:  *img.ImageFamily,
+			OSType:       *img.OSType,
+			Architecture: *img.Architecture,
+		}
+		dataSourceOut.Images = append(dataSourceOut.Images, image)
 	}
 
-	output := DatasourceOutput{
-		ImageId:      result.ImageList.Image[0].ImageId,
-		ImageName:    result.ImageList.Image[0].ImageName,
-		ImageFamily:  result.ImageList.Image[0].ImageFamily,
-		OsType:       result.ImageList.Image[0].OsType,
-		Architecture: result.ImageList.Image[0].Architecture,
-	}
+	return dataSourceOut, nil
 
-	return output, nil
 }

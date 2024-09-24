@@ -19,6 +19,7 @@
 |os_type      | string | windows, linux      | OS type of the image.                                                                                  |
 |architecture | string | i386, x86_64, arm64 | Architectre of the images.                                                                             |
 |usage        | string | instance, none      |- Instance: The image is already in use and running on an ECS instance. <br> - None: The image is idle. |
+|tag          | map    | map of string       | tag of the image.                                                                                      |
 
 ## Outputs
 |    Name     | Type   |
@@ -45,5 +46,10 @@ data "alicloud-image" "test_image" {
   secret_key = "v9-adftthisfathisisnotmysecretkey"
   region  = "cn-hongkong"
   image_name = "aliyun_3_x64_20G_alibase_*.vhd"
+
+  tag = {
+    env = "prod"
+    project = "qq-xxx"
+  }
 }
 ```
