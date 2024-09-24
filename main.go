@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
-	"github.com/myklst/packer-plugin-alicloud/datasource"
+	datasource "github.com/myklst/packer-plugin-alicloud/datasource/image"
 	"github.com/myklst/packer-plugin-alicloud/version"
 )
 

@@ -34,7 +34,7 @@
 packer {
   required_plugins {
      alicloud = {
-      source  = "github.com/Kid-debug/alicloud"
+      source  = "github.com/myklst/alicloud"
       version = "~> 0.1"
     }
   }
