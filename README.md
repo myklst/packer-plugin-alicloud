@@ -1,9 +1,9 @@
 # packer-plugin-alicloud
 
-## Input
+## Inputs
 
 ### Required:
-|  Variable |  Type  |
+|    Name   |  Type  |
 |-----------|--------|
 |access_key | string |
 |secret_key | string |
@@ -11,7 +11,7 @@
 
 ### Optional:
 
-|  Variable   | Type   |     Valid Value     | Describetion |
+|    Name     | Type   |     Valid Value     | Description |
 |-------------|--------|---------------------|--------------|
 |image_id     | string | any string          | id of the image |
 |image_name   | string | any string          | name of the image |
@@ -20,8 +20,8 @@
 |architecture | string | i386, x86_64, arm64 | Architectre of the images |
 |usage        | string | instance, none      |- Instance: The image is already in use and running on an ECS instance. <br> - None: The image is idle. |
 
-## Output
-|  Variable   | Type   |
+## Outputs
+|    Name     | Type   |
 |-------------|--------|
 |image_id     | string |
 |image_name   | string |
