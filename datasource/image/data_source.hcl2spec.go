@@ -19,7 +19,7 @@ type FlatConfig struct {
 	OsType       *string           `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
 	Architecture *string           `mapstructure:"architecture" cty:"architecture" hcl:"architecture"`
 	Usage        *string           `mapstructure:"usage" cty:"usage" hcl:"usage"`
-	Tag          map[string]string `mapstructure:"tag" cty:"tag" hcl:"tag"`
+	Tag          map[string]string `mapstructure:"tags" cty:"tags" hcl:"tags"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -43,7 +43,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"os_type":      &hcldec.AttrSpec{Name: "os_type", Type: cty.String, Required: false},
 		"architecture": &hcldec.AttrSpec{Name: "architecture", Type: cty.String, Required: false},
 		"usage":        &hcldec.AttrSpec{Name: "usage", Type: cty.String, Required: false},
-		"tag":          &hcldec.AttrSpec{Name: "tag", Type: cty.Map(cty.String), Required: false},
+		"tags":         &hcldec.AttrSpec{Name: "tags", Type: cty.Map(cty.String), Required: false},
 	}
 	return s
 }

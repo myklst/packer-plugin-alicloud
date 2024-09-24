@@ -19,7 +19,7 @@
 |os_type      | string | windows, linux      | OS type of the image.                                                                                  |
 |architecture | string | i386, x86_64, arm64 | Architectre of the images.                                                                             |
 |usage        | string | instance, none      |- Instance: The image is already in use and running on an ECS instance. <br> - None: The image is idle. |
-|tag          | map    | map of string       | Tag of the image.                                                                                      |
+|tags         | map    | map of string       | Tags of the image.                                                                                     |
 
 ## Outputs
 |    Name     | Type   |

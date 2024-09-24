@@ -32,7 +32,7 @@ type Config struct {
 	OsType       string            `mapstructure:"os_type"`
 	Architecture string            `mapstructure:"architecture"`
 	Usage        string            `mapstructure:"usage"`
-	Tag          map[string]string `mapstructure:"tag"`
+	Tag          map[string]string `mapstructure:"tags"`
 }
 
 type DatasourceOutput struct {

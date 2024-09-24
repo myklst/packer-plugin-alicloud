@@ -24,7 +24,7 @@ data "alicloud-image" "test_image" {
   region  = var.region_id
   image_name = var.image_name
 
-  // tag = {
+  // tags = {
   //   image = "web-server-dev-terratest"
   // }
 }
