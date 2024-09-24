@@ -11,13 +11,13 @@
 
 ### Optional:
 
-|    Name     | Type   |     Valid Value     | Description |
-|-------------|--------|---------------------|--------------|
-|image_id     | string | any string          | id of the image |
-|image_name   | string | any string          | name of the image |
-|image_family | string | any string          | famaily of the image |
-|os_type      | string | windows, linux      | Os type of the image |
-|architecture | string | i386, x86_64, arm64 | Architectre of the images |
+|    Name     | Type   |     Valid Value     | Description                                                                                            |
+|-------------|--------|---------------------|--------------------------------------------------------------------------------------------------------|
+|image_id     | string | any string          | id of the image                                                                                        |
+|image_name   | string | any string          | name of the image                                                                                      |
+|image_family | string | any string          | famaily of the image                                                                                   |
+|os_type      | string | windows, linux      | OS type of the image                                                                                   |
+|architecture | string | i386, x86_64, arm64 | Architectre of the images                                                                              |
 |usage        | string | instance, none      |- Instance: The image is already in use and running on an ECS instance. <br> - None: The image is idle. |
 
 ## Outputs
