@@ -34,14 +34,14 @@
 ```
 packer {
   required_plugins {
-     alicloud = {
+     st-alicloud = {
       source  = "github.com/myklst/alicloud"
       version = "~> 0.1"
     }
   }
 }
 
-data "alicloud-image" "test_image" {
+data "st-alicloud-image" "test_image" {
   access_key = "v1-gastisthisisnotmyaccesskey"
   secret_key = "v9-adftthisfathisisnotmysecretkey"
   region  = "cn-hongkong"
