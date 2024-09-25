@@ -1,4 +1,4 @@
-//go:generate packer-sdc mapstructure-to-hcl2 -type DatasourceOutput,Image,Config
+//go:generate packer-sdc mapstructure-to-hcl2 -type DatasourceOutput,Image,Tag,Config
 package datasource
 
 import (
@@ -32,7 +32,7 @@ type Config struct {
 	OsType       string            `mapstructure:"os_type"`
 	Architecture string            `mapstructure:"architecture"`
 	Usage        string            `mapstructure:"usage"`
-	Tag          map[string]string `mapstructure:"tags"`
+	Tags         map[string]string `mapstructure:"tags"`
 }
 
 type DatasourceOutput struct {
@@ -45,6 +45,12 @@ type Image struct {
 	ImageFamily  string `mapstructure:"image_family"`
 	OSType       string `mapstructure:"os_type"`
 	Architecture string `mapstructure:"architecture"`
+	Tags         []Tag  `mapstructure:"tags"`
+}
+
+type Tag struct {
+	TagKey   string `mapstructure:"key"`
+	TagValue string `mapstructure:"value"`
 }
 
 func (d *Datasource) ConfigSpec() hcldec.ObjectSpec {
@@ -81,15 +87,11 @@ func (d *Datasource) OutputSpec() hcldec.ObjectSpec {
 }
 
 func CreateClient(d *Datasource) (_result *ecs20140526.Client, _err error) {
-	// The project code leakage may result in the leakage of AccessKey, posing a threat to the security of all resources under the account. The following code examples are for reference only.
-	// It is recommended to use the more secure STS credential. For more credentials, please refer to: https://www.alibabacloud.com/help/en/alibaba-cloud-sdk-262060/latest/configure-credentials-378661.
 	config := &openapi.Config{
-		// Required, please ensure that the environment variables ALIBABA_CLOUD_ACCESS_KEY_ID is set.
-		AccessKeyId: tea.String(d.config.AccessKey),
-		// Required, please ensure that the environment variables ALIBABA_CLOUD_ACCESS_KEY_SECRET is set.
+		AccessKeyId:     tea.String(d.config.AccessKey),
 		AccessKeySecret: tea.String(d.config.SecretKey),
 	}
-	// See https://api.alibabacloud.com/product/Ecs.
+
 	config.Endpoint = tea.String(fmt.Sprintf("ecs.%s.aliyuncs.com", d.config.Region))
 	_result = &ecs20140526.Client{}
 	_result, _err = ecs20140526.NewClient(config)
@@ -103,10 +105,10 @@ func (d *Datasource) Execute() (cty.Value, error) {
 	}
 
 	var tags []*ecs20140526.DescribeImagesRequestTag
-	for key := range d.config.Tag {
+	for key := range d.config.Tags {
 		tag := &ecs20140526.DescribeImagesRequestTag{
 			Key:   tea.String(key),
-			Value: tea.String(d.config.Tag[key]),
+			Value: tea.String(d.config.Tags[key]),
 		}
 		tags = append(tags, tag)
 	}
@@ -132,7 +134,7 @@ func (d *Datasource) Execute() (cty.Value, error) {
 	}
 
 	// Make API request
-	var imgOutput DatasourceOutput
+	var dataOutput DatasourceOutput
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {
 		defer func() {
@@ -140,17 +142,20 @@ func (d *Datasource) Execute() (cty.Value, error) {
 				_e = r
 			}
 		}()
-		// Copy the code to run, please print the return value of the API by yourself.
+
 		resp, err := client.DescribeImagesWithOptions(describeImagesRequest, runtime)
 		if err != nil {
 			return err
 		}
 
-		imgOutput, err = getFilteredImage(resp)
+		// Filter images
+		var filteredImages []Image
+		filteredImages, err = getFilteredImage(resp)
 		if err != nil {
 			return err
 		}
 
+		dataOutput.Images = filteredImages
 		return nil
 	}()
 
@@ -158,12 +163,9 @@ func (d *Datasource) Execute() (cty.Value, error) {
 		var error = &tea.SDKError{}
 		if _t, ok := tryErr.(*tea.SDKError); ok {
 			error = _t
-		} else {
-			error.Message = tea.String(tryErr.Error())
 		}
-		// Only a printing example. Please be careful about exception handling and do not ignore exceptions directly in engineering projects.
-		// print error message
-		// Please click on the link below for diagnosis.
+
+		// msg: Please click on the link below for diagnosis.
 		var data interface{}
 		d := json.NewDecoder(strings.NewReader(tea.StringValue(error.Data)))
 		d.Decode(&data)
@@ -175,27 +177,33 @@ func (d *Datasource) Execute() (cty.Value, error) {
 		return cty.NullVal(cty.EmptyObject), fmt.Errorf("%s", tryErr.Error())
 	}
 
-	return hcl2helper.HCL2ValueFromConfig(imgOutput, d.OutputSpec()), nil
+	return hcl2helper.HCL2ValueFromConfig(dataOutput, d.OutputSpec()), nil
 }
 
-func getFilteredImage(resp *ecs20140526.DescribeImagesResponse) (DatasourceOutput, error) {
-	var dataSourceOut DatasourceOutput
-
+func getFilteredImage(resp *ecs20140526.DescribeImagesResponse) (images []Image, err error) {
 	if *resp.Body.TotalCount == 0 {
-		return dataSourceOut, fmt.Errorf("no image found matching the filters")
+		return images, fmt.Errorf("no image found matching the filters")
 	}
 
 	for _, img := range resp.Body.Images.Image {
-		image := Image{
+		var tags []Tag
+		for _, imgtag := range img.Tags.Tag {
+			tag := Tag{
+				TagKey:   *imgtag.TagKey,
+				TagValue: *imgtag.TagValue,
+			}
+			tags = append(tags, tag)
+		}
+
+		images = append(images, Image{
 			ImageId:      *img.ImageId,
 			ImageName:    *img.ImageName,
 			ImageFamily:  *img.ImageFamily,
 			OSType:       *img.OSType,
 			Architecture: *img.Architecture,
-		}
-		dataSourceOut.Images = append(dataSourceOut.Images, image)
+			Tags:         tags,
+		})
 	}
 
-	return dataSourceOut, nil
-
+	return images, nil
 }

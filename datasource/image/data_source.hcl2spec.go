@@ -19,7 +19,7 @@ type FlatConfig struct {
 	OsType       *string           `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
 	Architecture *string           `mapstructure:"architecture" cty:"architecture" hcl:"architecture"`
 	Usage        *string           `mapstructure:"usage" cty:"usage" hcl:"usage"`
-	Tag          map[string]string `mapstructure:"tags" cty:"tags" hcl:"tags"`
+	Tags         map[string]string `mapstructure:"tags" cty:"tags" hcl:"tags"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -74,11 +74,12 @@ func (*FlatDatasourceOutput) HCL2Spec() map[string]hcldec.Spec {
 // FlatImage is an auto-generated flat version of Image.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatImage struct {
-	ImageId      *string `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
-	ImageName    *string `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
-	ImageFamily  *string `mapstructure:"image_family" cty:"image_family" hcl:"image_family"`
-	OSType       *string `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
-	Architecture *string `mapstructure:"architecture" cty:"architecture" hcl:"architecture"`
+	ImageId      *string   `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
+	ImageName    *string   `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
+	ImageFamily  *string   `mapstructure:"image_family" cty:"image_family" hcl:"image_family"`
+	OSType       *string   `mapstructure:"os_type" cty:"os_type" hcl:"os_type"`
+	Architecture *string   `mapstructure:"architecture" cty:"architecture" hcl:"architecture"`
+	Tags         []FlatTag `mapstructure:"tags" cty:"tags" hcl:"tags"`
 }
 
 // FlatMapstructure returns a new FlatImage.
@@ -98,6 +99,32 @@ func (*FlatImage) HCL2Spec() map[string]hcldec.Spec {
 		"image_family": &hcldec.AttrSpec{Name: "image_family", Type: cty.String, Required: false},
 		"os_type":      &hcldec.AttrSpec{Name: "os_type", Type: cty.String, Required: false},
 		"architecture": &hcldec.AttrSpec{Name: "architecture", Type: cty.String, Required: false},
+		"tags":         &hcldec.BlockListSpec{TypeName: "tags", Nested: hcldec.ObjectSpec((*FlatTag)(nil).HCL2Spec())},
+	}
+	return s
+}
+
+// FlatTag is an auto-generated flat version of Tag.
+// Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
+type FlatTag struct {
+	TagKey   *string `mapstructure:"key" cty:"key" hcl:"key"`
+	TagValue *string `mapstructure:"value" cty:"value" hcl:"value"`
+}
+
+// FlatMapstructure returns a new FlatTag.
+// FlatTag is an auto-generated flat version of Tag.
+// Where the contents a fields with a `mapstructure:,squash` tag are bubbled up.
+func (*Tag) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec } {
+	return new(FlatTag)
+}
+
+// HCL2Spec returns the hcl spec of a Tag.
+// This spec is used by HCL to read the fields of Tag.
+// The decoded values from this spec will then be applied to a FlatTag.
+func (*FlatTag) HCL2Spec() map[string]hcldec.Spec {
+	s := map[string]hcldec.Spec{
+		"key":   &hcldec.AttrSpec{Name: "key", Type: cty.String, Required: false},
+		"value": &hcldec.AttrSpec{Name: "value", Type: cty.String, Required: false},
 	}
 	return s
 }

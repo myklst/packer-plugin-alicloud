@@ -24,8 +24,8 @@ data "alicloud-image" "test_image" {
   region  = var.region_id
   image_name = var.image_name
 
-  // tags = {
-  //   image = "web-server-dev-terratest"
+  // tags ={
+  //   env = "basic"
   // }
 }
 
@@ -40,5 +40,21 @@ build {
     inline = [
       "echo image_id: ${data.alicloud-image.test_image.images[0].image_id}",
     ]
+    // inline = [
+    //   "echo rysn_image_id: ${local.rsynImageID[0]}, webserver_image_id: ${local.webserverImageID[0]}",
+    // ]
   }
 }
+
+// locals {
+//   rsynImageID = compact(flatten([for v in data.alicloud-image.test_image.images : [
+//     for tag in v.tags : [
+//      tag.key == "usage" && tag.value == "rsyn"? v.image_id : null
+//     ]
+//   ]]))
+//   webserverImageID = compact(flatten([for v in data.alicloud-image.test_image.images : [
+//     for tag in v.tags : [
+//      tag.key == "usage" && tag.value == "webserver"? v.image_id : null
+//     ]
+//   ]]))
+// }
