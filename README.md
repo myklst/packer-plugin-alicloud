@@ -50,13 +50,13 @@ data "st-alicloud-image" "ecs_images" {
 }
 
 locals {
-  prodImageID = compact(flatten([for v in data.alicloud-image.ecs_images.images : [
+  prodImageID = compact(flatten([for v in data.st-alicloud-image.ecs_images.images : [
     for tag in v.tags : [
      tag.key == "env" && tag.value == "prod"? v.image_id : null
     ]
   ]]))
 
-  devImageID = compact(flatten([for v in data.alicloud-image.ecs_images.images : [
+  devImageID = compact(flatten([for v in data.st-alicloud-image.ecs_images.images : [
     for tag in v.tags : [
      tag.key == "env" && tag.value == "dev"? v.image_id : null
     ]
