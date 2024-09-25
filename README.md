@@ -38,13 +38,13 @@ packer {
   }
 }
 
-data "st-alicloud-image" "ecs_images" {
+data "st-alicloud-images" "ecs_images" {
   access_key = "v1-gastisthisisnotmyaccesskey"
   secret_key = "v9-adftthisfathisisnotmysecretkey"
   region  = "cn-hongkong"
   image_name = "ThisIsMyImageName_*.vhd"
 
-  tag = {
+  tags = {
     status = "activated"
   }
 }
