@@ -22,13 +22,10 @@
 |tags         | map    | map of string       | Tags of the image.                                                                                     |
 
 ## Outputs
-|    Name     | Type   |
-|-------------|--------|
-|image_id     | string |
-|image_name   | string |
-|image_family | string |
-|os_type      | string |
-|architecture | string |
+|    Name     | Type           |
+|-------------|----------------|
+|images       | <pre>list of object([{<br>  image_id     = string<br>  image_name   = string<br>  image_family = string<br>  os_type      = string<br>  architecture = string<br>  tags         = list of object([{<br>    key   = string<br>    value = string<br>  }])<br>}])</pre> |
+
 
 ## Example
 ```
@@ -41,15 +38,28 @@ packer {
   }
 }
 
-data "st-alicloud-image" "test_image" {
+data "st-alicloud-image" "ecs_images" {
   access_key = "v1-gastisthisisnotmyaccesskey"
   secret_key = "v9-adftthisfathisisnotmysecretkey"
   region  = "cn-hongkong"
-  image_name = "aliyun_3_x64_20G_alibase_*.vhd"
+  image_name = "ThisIsMyImageName_*.vhd"
 
   tag = {
-    env = "prod"
-    project = "qq-xxx"
+    status = "activated"
   }
+}
+
+locals {
+  prodImageID = compact(flatten([for v in data.alicloud-image.ecs_images.images : [
+    for tag in v.tags : [
+     tag.key == "env" && tag.value == "prod"? v.image_id : null
+    ]
+  ]]))
+
+  devImageID = compact(flatten([for v in data.alicloud-image.ecs_images.images : [
+    for tag in v.tags : [
+     tag.key == "env" && tag.value == "dev"? v.image_id : null
+    ]
+  ]]))
 }
 ```
