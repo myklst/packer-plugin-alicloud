@@ -11,25 +11,35 @@ HASHICORP_PACKER_PLUGIN_SDK_VERSION?=$(shell go list -m github.com/hashicorp/pac
 build:
 	@go build -o ${BINARY}
 
-dev:
+dev: clean
 	@go build -ldflags="-X '${PLUGIN_FQN}/version.VersionPrerelease=dev'" -o '${BINARY}'
 	packer plugins install --path ${BINARY} "$(shell echo "${PLUGIN_FQN}" | sed 's/packer-plugin-//')"
 
-test:
-	@go test -race -count $(COUNT) $(TEST) -timeout=3m
+docs: install-packer-sdc
+	@rm -rf .docs docs-partials .web-docs/components
+	@go generate ./...
+	@$(shell go env GOPATH)/bin/packer-sdc renderdocs -src ./docs -partials ./docs-partials -dst ./.docs
+	@./.web-docs/scripts/compile-to-webdocs.sh "." ".docs" ".web-docs" "hashicorp"
+	@rm -r ".docs"
 
-install-packer-sdc: ## Install packer sofware development command
-	@go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@${HASHICORP_PACKER_PLUGIN_SDK_VERSION}
-
-plugin-check: install-packer-sdc build
-	@packer-sdc plugin-check ${BINARY}
+test: dev
+	@go test -race -count $(COUNT) $(TEST) -timeout=5m
 
 testacc: dev
 	@PACKER_ACC=1 go test -count $(COUNT) -v $(TEST) -timeout=120m
 
-generate: install-packer-sdc
-	@go generate ./...
-	@rm -rf .docs
-	@packer-sdc renderdocs -src "docs" -partials docs-partials/ -dst ".docs/"
-	@./.web-docs/scripts/compile-to-webdocs.sh "." ".docs" ".web-docs" "hashicorp"
-	@rm -r ".docs"
+testacc-builder-eds: dev
+	@PACKER_ACC=1 go test -count $(COUNT) -v ./builder/eds/builder_acc_test.go -timeout=120m -run TestAccBuilder_Eds_Basic
+
+testacc-datasource-images: dev
+	@PACKER_ACC=1 go test -count $(COUNT) -v ./datasource/image/data_acc_test.go -timeout=120m -run TestAccAliCloudDatasource
+
+# Install packer sofware development command
+install-packer-sdc:
+	@go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@${HASHICORP_PACKER_PLUGIN_SDK_VERSION}
+
+plugin-check: install-packer-sdc build
+	@$(shell go env GOPATH)/bin/packer-sdc plugin-check ${BINARY}
+
+clean:
+	@packer plugins remove "github.com/myklst/alicloud"

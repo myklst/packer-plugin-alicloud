@@ -5,13 +5,16 @@ import (
 	"os"
 
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
-	datasource "github.com/myklst/packer-plugin-alicloud/datasource/image"
+
+	edsBuilder "github.com/myklst/packer-plugin-alicloud/builder/eds"
+	ecsimageDatasource "github.com/myklst/packer-plugin-alicloud/datasource/ecsimage"
 	"github.com/myklst/packer-plugin-alicloud/version"
 )
 
 func main() {
 	pps := plugin.NewSet()
-	pps.RegisterDatasource("images", new(datasource.Datasource))
+	pps.RegisterBuilder("eds", new(edsBuilder.Builder))
+	pps.RegisterDatasource("ecsimage", new(ecsimageDatasource.Datasource))
 	pps.SetVersion(version.PluginVersion)
 	err := pps.Run()
 	if err != nil {

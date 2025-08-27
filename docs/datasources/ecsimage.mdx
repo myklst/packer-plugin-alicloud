@@ -1,0 +1,85 @@
+---
+description: |
+  The AliCloud Images data source provides information from an ECS Image that will
+  be fetched based on the filter options provided in the configuration.
+page_title: AliCloud Images - Data Source
+nav_title: AliCloud Images
+---
+
+# AliCloud ECS Images Data Source
+
+Type: `alicloud-ecsimage`
+
+The AliCloud ECS Images data source will filter and fetch an ECS Image, and
+output all the ECS Image information that will be then available to use in the
+[AliCloud builders](/builder/eds).
+
+-> **Note:** Data sources is a feature exclusively available to HCL2 templates.
+
+## Basic Example
+
+```hcl
+data "alicloud-ecsimage" "example" {
+  image_name   = ""
+  image_family = ""
+  is_public    = false
+  source       = ""
+  owner_id     = ""
+  os_type      = ""
+  architecture = ""
+  usage        = ""
+
+  tags {
+    key = ""
+    value = ""
+  }
+
+  tags {
+    key = ""
+    value = ""
+  }
+}
+```
+
+Note that the data source will fail unless *EXACTLY* ONE image is returned.
+
+## Configuration Reference
+
+**Optional:**
+
+@include 'datasource/ecsimage/Image-not-required.mdx'
+
+#### Tags Filter
+
+@include 'datasource/ecsimage/ImageTag-not-required.mdx'
+
+## Output Data
+
+@include 'datasource/ecsimage/DatasourceOutput.mdx'
+
+## Authentication
+
+The authentication for AliCloud Data Sources uses the same configuration options
+as [AliCloud Builders](/builders/eds). To learn more about all of the available
+authentication options please see
+[AliCloud Builders authentication](/docs/builders/eds#authentication).
+
+-> **Note:** The authentication session started by a data source is separate
+from any authentication sessions started by an AliCloud builder. Users are
+encouraged to use `variables` for defining and sharing configuration values
+between datasources and builders.
+
+Basic example of an AliCloud data source authentication using `assume_role`:
+
+```hcl
+data "amazon-secretsmanager" "basic-example" {
+  name = "packer_test_secret"
+  key  = "packer_test_key"
+
+  assume_role {
+      role_arn     = "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
+      session_name = "SESSION_NAME"
+      external_id  = "EXTERNAL_ID"
+  }
+}
+```

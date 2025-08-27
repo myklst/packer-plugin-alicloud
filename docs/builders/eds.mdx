@@ -1,0 +1,288 @@
+---
+description: |
+  The alicloud-eds Packer builder is able to create AliCloud EDS Images for use
+  in AliCloud EDS.
+page_title: AliCloud EDS - Builders
+nav_title: EDS
+---
+
+# EDS Builder
+
+---
+Type: |
+  `alicloud-eds`
+Artifact BuilderId: |
+  `myklst.alicloudeds`
+---
+
+The `alicloud-eds` Packer builder is able to create Images for use in
+[AliCloud EDS](https://www.alibabacloud.com/en/product/cloud-desktop?_p_lc=1).
+
+This builder builds an Image by launching an EDS computer from a source Image,
+provisioning that running machine, and then creating an Image from that machine.
+This is all done in your own AliCloud account. The builder will create temporary
+cloud computer user, office site (if `office_site.id` does not specified), etc.
+that provide it temporary access to the instance while the image is being created.
+This simplifies configuration quite a bit.
+
+The builder does _not_ manage Images. Once it creates an Image and stores it in
+your account, it is up to you to use, delete, etc. the Image.
+
+-> **Note:** Temporary resources are, by default, all created with the
+prefix `packer-`. This can be useful if you want to restrict the security groups
+and key pairs Packer is able to operate on.
+
+## Configuration Reference
+
+There are many configuration options available for the builder. In addition to
+the items listed here, you will want to look at the general configuration
+references for [Access](#access-configuration),
+[Cloud Computer](#cloud-computer-configuration),
+[Cloud Computer User](#cloud-computer-user-configuration),
+[Office Site](#office-site-configuration),
+[Computer Template](#computer-template-configuration),
+[Policy Group](#policy-group-configuration),
+[User Command](#user-command-configuration) and
+[Communicator](#communicator-configuration)
+configuration references, which are necessary for this build to succeed and can
+be found further down the page.
+
+### Access Configuration
+
+**Required:**
+
+[HERE](https://github.com/hashicorp/packer-plugin-alicloud/blob/main/docs-partials/builder/ecs/AlicloudAccessConfig-required.mdx)
+
+**Optional:**
+
+[HERE](https://github.com/hashicorp/packer-plugin-alicloud/blob/main/docs-partials/builder/ecs/AlicloudAccessConfig-not-required.mdx)
+
+### Cloud Computer Configuration
+
+**Required:**
+
+*NONE*
+
+**Optional:**
+
+@include 'builder/eds/RunConfig-not-required.mdx'
+
+### Cloud Computer User Configuration
+
+**Required:**
+
+@include 'builder/eds/EdsUser-required.mdx'
+
+**Optional:**
+
+@include 'builder/eds/EdsUser-not-required.mdx'
+
+### Office Site Configuration
+
+**Optional:**
+
+@include 'builder/eds/EdsOfficeSite-not-required.mdx'
+
+##### CEN Configuration
+
+@include 'builder/eds/EdsOfficeSiteCen-not-required.mdx'
+
+##### Internet Access Configuration
+
+@include 'builder/eds/EdsOfficeSiteInternetAccess-not-required.mdx'
+
+### Computer Template Configuration
+
+**Required:**
+
+@include 'builder/eds/EdsComputerTemplate-required.mdx'
+
+**Optional:**
+
+@include 'builder/eds/EdsComputerTemplate-not-required.mdx'
+
+##### Source Image Filter Configuration
+
+@include 'builder/eds/EdsImageFilter-not-required.mdx'
+
+### Policy Group Configuration
+
+**Required:**
+
+*NONE*
+
+**Optional:**
+
+@include 'builder/eds/EdsPolicyGroup-not-required.mdx'
+
+### User Command Configuration
+
+**Required:**
+
+@include 'builder/eds/EdsUserCommand-required.mdx'
+
+**Optional:**
+
+@include 'builder/eds/EdsUserCommand-not-required.mdx'
+
+### Communicator Configuration
+
+**Optional:**
+
+@include 'packer-plugin-sdk/communicator/Config-not-required.mdx'
+
+@include 'packer-plugin-sdk/communicator/SSH-not-required.mdx'
+
+@include 'packer-plugin-sdk/communicator/SSHTemporaryKeyPair-not-required.mdx'
+
+@include 'packer-plugin-sdk/communicator/SSH-Key-Pair-Name-not-required.mdx'
+
+@include 'packer-plugin-sdk/communicator/SSH-Private-Key-File-not-required.mdx'
+
+@include 'packer-plugin-sdk/communicator/SSH-Agent-Auth-not-required.mdx'
+
+## Basic Example
+
+Here is a basic example. It is completely valid except for the access keys:
+
+**HCL2**
+
+```hcl
+source "alicloud-eds" "example" {
+  region        = "ap-southeast-11"
+
+  end_user {
+    name     = "packer-user-01"
+    password = "Password1234"
+    email    = "packer-user-01@example.com"
+  }
+
+  office_site {
+    internet_access {
+      enabled   = true
+      bandwidth = 10
+    }
+  }
+
+  computer_template {
+    instance_type      = "eds.general.8c16g"
+    root_disk_size_gib = 80
+    user_disk_size_gib = [40]
+
+    source_image_filter {
+      image_id = "desktopimage-windows-11-64-asp"
+    }
+  }
+
+  user_commands {
+    type     = "RunPowerShellScript"
+    content  = <<EOL
+New-Item -Path "C:\packer-test-01" -ItemType Directory
+EOL
+    encoding = "PlainText"
+    timeout  = 30
+  }
+
+  user_commands {
+    type     = "RunPowerShellScript"
+    content  = <<EOL
+New-Item -Path "C:\packer-test-02" -ItemType Directory
+EOL
+    encoding = "PlainText"
+    timeout  = 30
+  }
+}
+```
+
+-> **Note:** Packer can also read the access key and secret access key from
+environmental variables. See the configuration reference in the section above
+for more information on what environmental variables Packer will look for.
+
+## Accessing the Instance to Debug
+
+If you need to access the instance to debug for some reason, run this builder
+with the `-debug` flag. In debug mode, the builder will output the Wuying username
+and password. You can use this information to access the instance as it is running.
+
+## Build template data
+
+In configuration directives marked as a template engine above, the following
+variables are available:
+
+*NONE*
+
+## Build Shared Information Variables
+
+This builder generates data that are shared with provisioner and post-processor
+via build function of
+[template engine](/packer/docs/templates/legacy_json_templates/engine) for JSON
+and [contextual variables](/packer/docs/templates/hcl_templates/contextual-variables)
+for HCL2.
+
+The generated variables available for this builder are:
+
+*NONE*
+
+## Connecting to Windows instances using WinRM
+
+If you want to launch a Windows instance and connect using WinRM, you will need
+to configure WinRM on that instance. The following is a basic powershell script
+that can be supplied to AliCloud EDS using the "user_commands" option. It enables
+WinRM via HTTPS on port 5986, and creates a self-signed certificate to use to
+connect. If you are using a certificate from a CA, rather than creating a
+self-signed certificate, you can omit the "winrm_insecure" option mentioned below.
+
+autogenerated_password_https_bootstrap.txt
+
+```powershell
+<powershell>
+
+# MAKE SURE IN YOUR PACKER CONFIG TO SET:
+#
+#
+#    "winrm_username": "Administrator",
+#    "winrm_insecure": true,
+#    "winrm_use_ssl": true,
+#
+#
+
+Write-Output "Running User Data Script"
+Write-Host "(host) Running User Data Script"
+
+Set-ExecutionPolicy Unrestricted -Scope LocalMachine -Force -ErrorAction Ignore
+
+# Don't set this before Set-ExecutionPolicy as it throws an error
+$ErrorActionPreference = "stop"
+
+# Remove HTTP listener
+Remove-Item -Path WSMan:\Localhost\listener\listener* -Recurse
+
+# Create a self-signed certificate to let ssl work
+$Cert = New-SelfSignedCertificate -CertstoreLocation Cert:\LocalMachine\My -DnsName "packer"
+New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -CertificateThumbPrint $Cert.Thumbprint -Force
+
+# WinRM
+Write-Output "Setting up WinRM"
+Write-Host "(host) setting up WinRM"
+
+cmd.exe /c winrm quickconfig -q
+cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
+cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="1024"}'
+cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
+cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
+cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
+cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
+cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
+cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTPS" "@{Port=`"5986`";Hostname=`"packer`";CertificateThumbprint=`"$($Cert.Thumbprint)`"}"
+cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
+cmd.exe /c netsh advfirewall firewall add rule name="Port 5986" dir=in action=allow protocol=TCP localport=5986 profile=any
+cmd.exe /c net stop winrm
+cmd.exe /c sc config winrm start= auto
+cmd.exe /c net start winrm
+
+</powershell>
+```
+
+You'll notice that this config does not define a user or password; instead,
+Packer will ask AWS to provide a random password that it generates
+automatically. The following config will work with the above template:
