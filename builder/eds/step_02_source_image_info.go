@@ -18,7 +18,7 @@ type StepSourceImageInfo struct {
 }
 
 func (s *StepSourceImageInfo) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client20200930").(*alieds.Client)
+	client := state.Get("alieds20200930").(*alieds.Client)
 	ui := state.Get("ui").(packersdk.Ui)
 
 	ui.Say("Querying source image info...")
@@ -69,7 +69,8 @@ func (s *StepSourceImageInfo) Run(ctx context.Context, state multistep.StateBag)
 		return multistep.ActionHalt
 	}
 
-	s.SourceImageFilter.ImageId = *resp.Body.Images[0].ImageId
+	state.Put("image_id", *resp.Body.Images[0].ImageId)
+	state.Put("os_type", *resp.Body.Images[0].OsType)
 
 	return multistep.ActionContinue
 }

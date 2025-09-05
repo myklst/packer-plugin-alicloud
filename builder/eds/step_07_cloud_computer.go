@@ -15,17 +15,19 @@ import (
 )
 
 type StepCloudComputer struct {
-	RegionId           string
-	ResourceGroupId    string
-	ComputerPoolId     string
-	ComputerTemplateId string
-	OfficeSiteId       string
-	DesktopName        string
-	DesktopNameSuffix  bool
-	PolicyGroupId      string
-	PromotionId        string
-	Hostname           string
-	DesktopMemberIp    string
+	RegionId                string
+	ResourceGroupId         string
+	ComputerPoolId          string
+	ComputerTemplateId      string
+	OfficeSiteId            string
+	DesktopName             string
+	DesktopNameSuffix       bool
+	PolicyGroupId           string
+	PromotionId             string
+	Hostname                string
+	DesktopMemberIp         string
+	VolumeEncryptionEnabled bool
+	VolumeEncryptionKey     string
 
 	instanceId string
 }
@@ -43,9 +45,9 @@ func (s *StepCloudComputer) Run(ctx context.Context, state multistep.StateBag) m
 		s.PolicyGroupId = state.Get("policy_group_id").(string)
 	}
 
-	client := state.Get("client20200930").(*alieds.Client)
+	client := state.Get("alieds20200930").(*alieds.Client)
 	ui := state.Get("ui").(packersdk.Ui)
-	cloudComputerUsers := state.Get("cloud_computer_users").([]string)
+	cloudComputerUser := state.Get("cloud_computer_user").(string)
 
 	ui.Say("Creating cloud computer...")
 
@@ -70,18 +72,20 @@ func (s *StepCloudComputer) Run(ctx context.Context, state multistep.StateBag) m
 		RetryDelay: (&retry.Backoff{InitialBackoff: 1 * time.Second, MaxBackoff: 30 * time.Second, Multiplier: 2}).Linear,
 	}.Run(ctx, func(ctx context.Context) error {
 		resp, err = client.CreateDesktops(&alieds.CreateDesktopsRequest{
-			ResourceGroupId:   common.NilOrString(s.ResourceGroupId),
-			RegionId:          common.NilOrString(s.RegionId),
-			GroupId:           common.NilOrString(s.ComputerPoolId),
-			BundleId:          common.NilOrString(s.ComputerTemplateId),
-			OfficeSiteId:      common.NilOrString(s.OfficeSiteId),
-			DesktopName:       common.NilOrString(computerName),
-			DesktopNameSuffix: common.NilOrBool(s.DesktopNameSuffix),
-			PolicyGroupId:     common.NilOrString(s.PolicyGroupId),
-			PromotionId:       common.NilOrString(s.PromotionId),
-			Hostname:          common.NilOrString(s.Hostname),
-			DesktopMemberIp:   common.NilOrString(s.DesktopMemberIp),
-			EndUserId:         common.NilOrStringSlice(cloudComputerUsers...),
+			ResourceGroupId:         common.NilOrString(s.ResourceGroupId),
+			RegionId:                common.NilOrString(s.RegionId),
+			GroupId:                 common.NilOrString(s.ComputerPoolId),
+			BundleId:                common.NilOrString(s.ComputerTemplateId),
+			OfficeSiteId:            common.NilOrString(s.OfficeSiteId),
+			DesktopName:             common.NilOrString(computerName),
+			DesktopNameSuffix:       common.NilOrBool(s.DesktopNameSuffix),
+			PolicyGroupId:           common.NilOrString(s.PolicyGroupId),
+			Hostname:                common.NilOrString(s.Hostname),
+			EndUserId:               common.NilOrStringSlice(cloudComputerUser),
+			DesktopMemberIp:         common.NilOrString(s.DesktopMemberIp),
+			VolumeEncryptionEnabled: common.NilOrBool(s.VolumeEncryptionEnabled),
+			VolumeEncryptionKey:     common.NilOrString(s.VolumeEncryptionKey),
+			PromotionId:             common.NilOrString(s.PromotionId),
 		})
 		return err
 	})
@@ -93,7 +97,7 @@ func (s *StepCloudComputer) Run(ctx context.Context, state multistep.StateBag) m
 	s.instanceId = *computer[0]
 	state.Put("instance_id", *computer[0])
 
-	s.waitUntil(ctx, "Running", client)
+	s.waitUntil(ctx, state, "Running", client)
 
 	return multistep.ActionContinue
 }
@@ -104,7 +108,7 @@ func (s *StepCloudComputer) Cleanup(state multistep.StateBag) {
 	}
 
 	if s.instanceId != "" {
-		client := state.Get("client20200930").(*alieds.Client)
+		client := state.Get("alieds20200930").(*alieds.Client)
 		ui := state.Get("ui").(packersdk.Ui)
 
 		ui.Say("Terminating the cloud computer...")
@@ -138,12 +142,16 @@ func (s *StepCloudComputer) Cleanup(state multistep.StateBag) {
 			return
 		}
 
-		s.waitUntil(ctx, "Deleted", client)
+		s.waitUntil(ctx, state, "Deleted", client)
 	}
 }
 
-func (s *StepCloudComputer) waitUntil(ctx context.Context, targetStatus string, client *alieds.Client) error {
-	err := retry.Config{
+func (s *StepCloudComputer) waitUntil(ctx context.Context, state multistep.StateBag, targetStatus string, client *alieds.Client) error {
+	var (
+		resp *alieds.DescribeDesktopsResponse
+		err  error
+	)
+	err = retry.Config{
 		StartTimeout: 10 * time.Minute,
 		ShouldRetry: func(err error) bool {
 			retryable, _ := common.IsRetryableError(err)
@@ -153,7 +161,7 @@ func (s *StepCloudComputer) waitUntil(ctx context.Context, targetStatus string, 
 			return 5 * time.Second
 		},
 	}.Run(ctx, func(ctx context.Context) error {
-		resp, err := client.DescribeDesktops(&alieds.DescribeDesktopsRequest{
+		resp, err = client.DescribeDesktops(&alieds.DescribeDesktopsRequest{
 			RegionId:  common.NilOrString(s.RegionId),
 			DesktopId: common.NilOrStringSlice(s.instanceId),
 		})
@@ -176,5 +184,9 @@ func (s *StepCloudComputer) waitUntil(ctx context.Context, targetStatus string, 
 		}
 		return nil
 	})
+	if err == nil && len(resp.Body.Desktops) > 0 {
+		state.Put("instance_ip", *resp.Body.Desktops[0].NetworkInterfaceIp)
+	}
+
 	return err
 }

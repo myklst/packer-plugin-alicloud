@@ -50,25 +50,6 @@ source "alicloud-eds" "test" {
     }
   }
 
-//   user_commands {
-//     type     = "RunPowerShellScript"
-//     content  = <<EOL
-// Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-// EOL
-//     encoding = "PlainText"
-//     timeout  = 180
-//   }
-
-//   user_commands {
-//     type     = "RunPowerShellScript"
-//     content  = <<EOL
-// Install-Module -Name Microsoft.WinGet.Client -Force -Scope AllUsers
-// Repair-WinGetPackageManager -AllUsers
-// EOL
-//     encoding = "PlainText"
-//     timeout  = 180
-//   }
-
   user_commands {
     type     = "RunPowerShellScript"
     content  = <<EOL
@@ -83,54 +64,12 @@ $multilineString = @"
 properties:
   configurationVersion: 0.2.0
   resources:
-    - id: Atlassian Sourcetree
-      directives:
-        description: Install Atlassian Sourcetree
-      resource: Microsoft.WinGet.DSC/WinGetPackage
-      settings:
-        id: Atlassian.Sourcetree
-        source: winget
-
     - id: Notepad++
       directives:
         description: Install Notepad++
       resource: Microsoft.WinGet.DSC/WinGetPackage
       settings:
         id: Notepad++.Notepad++
-        source: winget
-
-    - id: Postman
-      directives:
-        description: Install Postman
-      resource: Microsoft.WinGet.DSC/WinGetPackage
-      settings:
-        id: Postman.Postman
-        source: winget
-
-    - id: RocketChat
-      directives:
-        description: Install RocketChat
-        securityContext: elevated
-      resource: Microsoft.WinGet.DSC/WinGetPackage
-      settings:
-        id: RocketChat.RocketChat
-        source: winget
-
-    - id: Visual Studio
-      directives:
-        description: Install Microsoft VisualStudio 2022 Professional
-        securityContext: elevated
-      resource: Microsoft.WinGet.DSC/WinGetPackage
-      settings:
-        id: Microsoft.VisualStudio.2022.Professional
-        source: winget
-
-    - id: Visual Studio Code
-      directives:
-        description: Install Visual Studio Code
-      resource: Microsoft.WinGet.DSC/WinGetPackage
-      settings:
-        id: Microsoft.VisualStudioCode
         source: winget
 "@
 Set-Content -Path $filePath -Value $multilineString
@@ -139,13 +78,8 @@ EOL
     timeout  = 30
   }
 
-  user_commands {
-    type     = "RunPowerShellScript"
-    content  = <<EOL
-winget.exe configure --accept-configuration-agreements C:/packer.winget
-EOL
-    encoding = "PlainText"
-    timeout  = 900
+  artifact {
+    image_name = "packer-test-basic"
   }
 }
 

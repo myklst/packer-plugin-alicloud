@@ -8,7 +8,7 @@ import (
 	"time"
 
 	aliopenapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
-	aliecs20140526 "github.com/alibabacloud-go/ecs-20140526/v4/client"
+	aliecs20140526 "github.com/alibabacloud-go/ecs-20140526/v7/client"
 	alitea "github.com/alibabacloud-go/tea/tea"
 	alipacker "github.com/hashicorp/packer-plugin-alicloud/builder/ecs"
 

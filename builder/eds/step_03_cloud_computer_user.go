@@ -8,6 +8,7 @@ import (
 	alieds "github.com/alibabacloud-go/eds-user-20210308/client"
 	alitea "github.com/alibabacloud-go/tea/tea"
 
+	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/retry"
@@ -16,14 +17,12 @@ import (
 )
 
 type StepCloudComputerUser struct {
-	User  *EdsUser
-	Debug bool
-
-	nonEmptyUserIds []string
+	Comm *communicator.Config
+	User *EdsUser
 }
 
 func (s *StepCloudComputerUser) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client20210308").(*alieds.Client)
+	client := state.Get("alieds20210308").(*alieds.Client)
 	ui := state.Get("ui").(packersdk.Ui)
 
 	ui.Say("Creating cloud computer users...")
@@ -35,7 +34,6 @@ func (s *StepCloudComputerUser) Run(ctx context.Context, state multistep.StateBa
 		err      error
 	)
 	if s.User.Name != "" {
-		s.nonEmptyUserIds = append(s.nonEmptyUserIds, s.User.Name)
 		users = append(users, &alieds.CreateUsersRequestUsers{
 			EndUserId:    alitea.String(s.User.Name),
 			Password:     alitea.String(password),
@@ -74,19 +72,19 @@ func (s *StepCloudComputerUser) Run(ctx context.Context, state multistep.StateBa
 		return multistep.ActionHalt
 	}
 
-	if s.Debug {
-		ui.Say("====================================")
-		ui.Sayf("AliCloud EDS Username: %s", s.User.Name)
-		ui.Sayf("AliCloud EDS Password: %s", password)
-		ui.Say("====================================")
-	}
-	state.Put("cloud_computer_users", s.nonEmptyUserIds)
+	ui.Say("====================================")
+	ui.Sayf("Alicloud EDS Username: %s", s.User.Name)
+	ui.Sayf("Alicloud EDS Password: %s", password)
+	ui.Say("====================================")
+
+	s.Comm.SSHUsername = s.User.Name
+	state.Put("cloud_computer_user", s.User.Name)
 
 	return multistep.ActionContinue
 }
 
 func (s *StepCloudComputerUser) Cleanup(state multistep.StateBag) {
-	client := state.Get("client20210308").(*alieds.Client)
+	client := state.Get("alieds20210308").(*alieds.Client)
 	ui := state.Get("ui").(packersdk.Ui)
 
 	ui.Say("Deleting cloud computer users...")
@@ -107,7 +105,7 @@ func (s *StepCloudComputerUser) Cleanup(state multistep.StateBag) {
 		RetryDelay: (&retry.Backoff{InitialBackoff: 1 * time.Second, MaxBackoff: 30 * time.Second, Multiplier: 2}).Linear,
 	}.Run(ctx, func(ctx context.Context) error {
 		_, err = client.RemoveUsers(&alieds.RemoveUsersRequest{
-			Users: common.NilOrStringSlice(s.nonEmptyUserIds...),
+			Users: common.NilOrStringSlice(s.User.Name),
 		})
 		return err
 	})

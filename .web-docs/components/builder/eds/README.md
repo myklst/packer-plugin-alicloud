@@ -69,6 +69,10 @@ be found further down the page.
 
 - `desktop_ip` (string) - Desktop Ip
 
+- `volume_encryption_enabled` (bool) - Volume Encryption Enabled
+
+- `volume_encryption_key` (string) - Volume Encryption Key
+
 - `end_user` (EdsUser) - End User
 
 - `office_site` (EdsOfficeSite) - Office Site

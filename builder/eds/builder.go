@@ -14,9 +14,11 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hcldec"
 	packercommon "github.com/hashicorp/packer-plugin-sdk/common"
+	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
+	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
 
@@ -69,7 +71,7 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, []string, error) {
 
 func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook) (packersdk.Artifact, error) {
 	// Used for create EDS resources (except EDS users)
-	client20200930, err := alieds20200930.NewClient(&aliclient.Config{
+	alieds20200930, err := alieds20200930.NewClient(&aliclient.Config{
 		RegionId:        common.NilOrString(b.config.AlicloudRegion),
 		AccessKeyId:     common.NilOrString(b.config.AlicloudAccessKey),
 		AccessKeySecret: common.NilOrString(b.config.AlicloudSecretKey),
@@ -79,7 +81,7 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 	}
 
 	// Used for create EDS users.
-	client20210308, err := alieds20210308.NewClient(&aliclient.Config{
+	alieds20210308, err := alieds20210308.NewClient(&aliclient.Config{
 		RegionId:        alitea.String("ap-southeast-1"), // Cannot use b.config.AlicloudRegion because it's not supported by AliCloud EDS
 		AccessKeyId:     common.NilOrString(b.config.AlicloudAccessKey),
 		AccessKeySecret: common.NilOrString(b.config.AlicloudSecretKey),
@@ -92,9 +94,10 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 	state := new(multistep.BasicStateBag)
 	state.Put("hook", hook)
 	state.Put("ui", ui)
-	state.Put("client20200930", client20200930)
-	state.Put("client20210308", client20210308)
+	state.Put("alieds20200930", alieds20200930)
+	state.Put("alieds20210308", alieds20210308)
 	state.Put("config", &b.config)
+	generatedData := &packerbuilderdata.GeneratedData{State: state}
 
 	steps := []multistep.Step{
 		&StepPreValidate{
@@ -106,8 +109,8 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 			SourceImageFilter: &b.config.ComputerTemplate.SourceImageFilter,
 		},
 		&StepCloudComputerUser{
-			User:  &b.config.RunConfig.EndUser,
-			Debug: b.config.PackerDebug,
+			Comm: &b.config.RunConfig.Comm,
+			User: &b.config.RunConfig.EndUser,
 		},
 		&StepOfficeSite{
 			RegionId:             b.config.AlicloudRegion,
@@ -122,7 +125,6 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 		&StepCloudComputerTemplate{
 			RegionId:                 b.config.AlicloudRegion,
 			ComputerTemplateId:       b.config.RunConfig.ComputerTemplate.Id,
-			SourceImageId:            b.config.ComputerTemplate.SourceImageFilter.ImageId,
 			InstanceType:             b.config.ComputerTemplate.InstanceType,
 			RootDiskSizeGib:          b.config.ComputerTemplate.RootDiskSizeGib,
 			RootDiskPerformanceLevel: b.config.ComputerTemplate.RootDiskPerformanceLevel,
@@ -135,15 +137,26 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 			PolicyGroupId: b.config.RunConfig.PolicyGroup.Id,
 		},
 		&StepCloudComputer{
-			RegionId:           b.config.AlicloudRegion,
-			ResourceGroupId:    b.config.RunConfig.ResourceGroupId,
-			ComputerPoolId:     b.config.RunConfig.ComputerPoolId,
-			ComputerTemplateId: b.config.RunConfig.ComputerTemplate.Id,
-			OfficeSiteId:       b.config.RunConfig.OfficeSite.Id,
-			DesktopNameSuffix:  b.config.RunConfig.DesktopNameSuffix,
-			PolicyGroupId:      b.config.RunConfig.PolicyGroup.Id,
-			Hostname:           b.config.RunConfig.Hostname,
-			DesktopMemberIp:    b.config.RunConfig.DesktopIp,
+			RegionId:                b.config.AlicloudRegion,
+			ResourceGroupId:         b.config.RunConfig.ResourceGroupId,
+			ComputerPoolId:          b.config.RunConfig.ComputerPoolId,
+			ComputerTemplateId:      b.config.RunConfig.ComputerTemplate.Id,
+			OfficeSiteId:            b.config.RunConfig.OfficeSite.Id,
+			DesktopNameSuffix:       b.config.RunConfig.DesktopNameSuffix,
+			PolicyGroupId:           b.config.RunConfig.PolicyGroup.Id,
+			Hostname:                b.config.RunConfig.Hostname,
+			DesktopMemberIp:         b.config.RunConfig.DesktopIp,
+			VolumeEncryptionEnabled: b.config.RunConfig.VolumeEncryptionEnabled,
+			VolumeEncryptionKey:     b.config.RunConfig.VolumeEncryptionKey,
+		},
+		&StepSshService{
+			RegionId:  b.config.AlicloudRegion,
+			EndUserId: b.config.RunConfig.EndUser.Name,
+		},
+		&StepSshKeyPair{
+			Comm:      &b.config.Comm,
+			RegionId:  b.config.AlicloudRegion,
+			EndUserId: b.config.RunConfig.EndUser.Name,
 		},
 	}
 
@@ -161,22 +174,27 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 		}
 	}
 
-	// steps = append(steps, &communicator.StepConnect{
-	// 	Config: &b.config.RunConfig.Comm,
-	// 	Host:   AccessHost(edsClient, b.config.AlicloudRegion),
-	// 	// SSHPort: awscommon.Port(
-	// 	// 	b.config.SSHInterface,
-	// 	// 	b.config.Comm.Port(),
-	// 	// ),
-	// 	SSHConfig: b.config.RunConfig.Comm.SSHConfigFunc(),
-	// })
+	// Only connect to the cloud computer if the office site is using a CEN,
+	// or network is not acceesable.
+	if b.config.RunConfig.OfficeSite.Cen.Id != "" {
+		steps = append(steps, &communicator.StepConnect{
+			Config:    &b.config.RunConfig.Comm,
+			Host:      SshHost(),
+			SSHConfig: b.config.RunConfig.Comm.SSHConfigFunc(),
+		})
+	}
+	steps = append(steps, &StepSetGeneratedData{
+		GeneratedData: generatedData,
+	})
 	steps = append(steps, &commonsteps.StepProvision{})
-
-	// Set the value of the generated data that will become available to provisioners.
-	// To share the data with post-processors, use the StateData in the artifact.
-	// state.Put("generated_data", map[string]interface{}{
-	// 	"GeneratedMockData": "mock-build-data",
-	// })
+	steps = append(steps, &StepCreateImage{
+		RegionId:     b.config.AlicloudRegion,
+		NewImageName: b.config.RunConfig.Artifact.ImageName,
+		Description:  b.config.RunConfig.Artifact.ImageDescription,
+	})
+	steps = append(steps, &commonsteps.StepCleanupTempKeys{
+		Comm: &b.config.RunConfig.Comm,
+	})
 
 	// Run!
 	b.runner = commonsteps.NewRunner(steps, b.config.PackerConfig, ui)
@@ -187,15 +205,12 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 		return nil, err.(error)
 	}
 
-	// artifact := &Artifact{
-	// 	// Add the builder generated data to the artifact StateData so that post-processors
-	// 	// can access them.
-	// 	StateData: map[string]interface{}{"generated_data": state.Get("generated_data")},
-	// }
-	// return artifact, nil
-	return nil, nil
-}
-
-func getGeneratedDataList() []string {
-	return []string{}
+	artifact := &Artifact{
+		RegionId:       b.config.AlicloudRegion,
+		BuilderIdValue: BuilderId,
+		StateData:      map[string]interface{}{"generated_data": state.Get("generated_data")},
+		Alieds20200930: alieds20200930,
+		Alieds20210308: alieds20210308,
+	}
+	return artifact, nil
 }

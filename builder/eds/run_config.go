@@ -1,5 +1,5 @@
 //go:generate packer-sdc struct-markdown
-//go:generate packer-sdc mapstructure-to-hcl2 -type EdsUser,EdsOfficeSiteInternetAccess,EdsOfficeSiteCen,EdsOfficeSite,EdsImageFilter,EdsComputerTemplate,EdsPolicyGroup,EdsUserCommand,RunConfig
+//go:generate packer-sdc mapstructure-to-hcl2 -type EdsUser,EdsOfficeSiteInternetAccess,EdsOfficeSiteCen,EdsOfficeSite,EdsImageFilter,EdsComputerTemplate,EdsPolicyGroup,EdsUserCommand,EdsArtifact,RunConfig
 
 package eds
 
@@ -223,20 +223,28 @@ type EdsUserCommand struct {
 }
 type EdsUserCommands []EdsUserCommand
 
+type EdsArtifact struct {
+	ImageName        string `mapstructure:"image_name" required:"true"`
+	ImageDescription string `mapstructure:"description" required:"false"`
+}
+
 type RunConfig struct {
 	Comm communicator.Config `mapstructure:",squash"`
 
-	ResourceGroupId   string              `mapstructure:"resource_group_id" required:"false"`
-	ComputerPoolId    string              `mapstructure:"computer_pool_id" required:"false"`
-	DesktopName       string              `mapstructure:"desktop_name" required:"false"`
-	DesktopNameSuffix bool                `mapstructure:"desktop_name_suffix" required:"false"`
-	Hostname          string              `mapstructure:"hostname" required:"false"`
-	DesktopIp         string              `mapstructure:"desktop_ip" required:"false"`
-	EndUser           EdsUser             `mapstructure:"end_user" required:"false"`
-	OfficeSite        EdsOfficeSite       `mapstructure:"office_site" required:"false"`
-	ComputerTemplate  EdsComputerTemplate `mapstructure:"computer_template" required:"false"`
-	PolicyGroup       EdsPolicyGroup      `mapstructure:"policy_group" required:"false"`
-	UserCommands      EdsUserCommands     `mapstructure:"user_commands" required:"false"`
+	ResourceGroupId         string              `mapstructure:"resource_group_id" required:"false"`
+	ComputerPoolId          string              `mapstructure:"computer_pool_id" required:"false"`
+	DesktopName             string              `mapstructure:"desktop_name" required:"false"`
+	DesktopNameSuffix       bool                `mapstructure:"desktop_name_suffix" required:"false"`
+	Hostname                string              `mapstructure:"hostname" required:"false"`
+	DesktopIp               string              `mapstructure:"desktop_ip" required:"false"`
+	VolumeEncryptionEnabled bool                `mapstructure:"volume_encryption_enabled" required:"false"`
+	VolumeEncryptionKey     string              `mapstructure:"volume_encryption_key" required:"false"`
+	EndUser                 EdsUser             `mapstructure:"end_user" required:"false"`
+	OfficeSite              EdsOfficeSite       `mapstructure:"office_site" required:"false"`
+	ComputerTemplate        EdsComputerTemplate `mapstructure:"computer_template" required:"false"`
+	PolicyGroup             EdsPolicyGroup      `mapstructure:"policy_group" required:"false"`
+	UserCommands            EdsUserCommands     `mapstructure:"user_commands" required:"false"`
+	Artifact                EdsArtifact         `mapstructure:"artifact" required:"true"`
 }
 
 func (c *RunConfig) Prepare(ctx *interpolate.Context) []error {
@@ -247,7 +255,7 @@ func (c *RunConfig) Prepare(ctx *interpolate.Context) []error {
 	if c.Comm.SSHKeyPairName == "" && c.Comm.SSHTemporaryKeyPairName == "" &&
 		c.Comm.SSHPrivateKeyFile == "" && c.Comm.SSHPassword == "" {
 
-		c.Comm.SSHTemporaryKeyPairName = fmt.Sprintf("packer_%s", uuid.TimeOrderedUUID())
+		c.Comm.SSHTemporaryKeyPairName = fmt.Sprintf("packer-%s", uuid.TimeOrderedUUID())
 	}
 
 	if c.Comm.SSHUsername == "" {
@@ -259,13 +267,20 @@ func (c *RunConfig) Prepare(ctx *interpolate.Context) []error {
 	// communicator is valid
 	errs := c.Comm.Prepare(ctx)
 
+	//
+	if c.Artifact.ImageName == "" {
+		errs = append(errs, fmt.Errorf("artifact.image_name must be specified"))
+	}
+	//
 	if c.ComputerTemplate.SourceImageFilter.ImageId == "" &&
 		c.ComputerTemplate.SourceImageFilter.ImageName == "" {
 		errs = append(errs, fmt.Errorf("source_image_filter.image_id or source_image_filter.image_name must be specified"))
 	}
+	//
 	if c.ComputerTemplate.RootDiskSizeGib < 40 {
 		errs = append(errs, fmt.Errorf("root_disk_size_gib must be at least 40"))
 	}
+	//
 	if len(c.ComputerTemplate.UserDiskSizeGib) <= 0 {
 		errs = append(errs, fmt.Errorf("user_disk_size_gib must be specified"))
 	}
@@ -273,6 +288,10 @@ func (c *RunConfig) Prepare(ctx *interpolate.Context) []error {
 		if size < 40 {
 			errs = append(errs, fmt.Errorf("user_disk_size_gib[%d] must be at least 40", i))
 		}
+	}
+	//
+	if c.VolumeEncryptionEnabled && c.VolumeEncryptionKey == "" {
+		errs = append(errs, fmt.Errorf("artifact.volume_encryption_key must be specified when volume_encryption_enabled is true"))
 	}
 
 	return errs

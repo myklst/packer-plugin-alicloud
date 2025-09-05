@@ -85,11 +85,14 @@ type FlatConfig struct {
 	DesktopNameSuffix             *bool                    `mapstructure:"desktop_name_suffix" required:"false" cty:"desktop_name_suffix" hcl:"desktop_name_suffix"`
 	Hostname                      *string                  `mapstructure:"hostname" required:"false" cty:"hostname" hcl:"hostname"`
 	DesktopIp                     *string                  `mapstructure:"desktop_ip" required:"false" cty:"desktop_ip" hcl:"desktop_ip"`
+	VolumeEncryptionEnabled       *bool                    `mapstructure:"volume_encryption_enabled" required:"false" cty:"volume_encryption_enabled" hcl:"volume_encryption_enabled"`
+	VolumeEncryptionKey           *string                  `mapstructure:"volume_encryption_key" required:"false" cty:"volume_encryption_key" hcl:"volume_encryption_key"`
 	EndUser                       *FlatEdsUser             `mapstructure:"end_user" required:"false" cty:"end_user" hcl:"end_user"`
 	OfficeSite                    *FlatEdsOfficeSite       `mapstructure:"office_site" required:"false" cty:"office_site" hcl:"office_site"`
 	ComputerTemplate              *FlatEdsComputerTemplate `mapstructure:"computer_template" required:"false" cty:"computer_template" hcl:"computer_template"`
 	PolicyGroup                   *FlatEdsPolicyGroup      `mapstructure:"policy_group" required:"false" cty:"policy_group" hcl:"policy_group"`
 	UserCommands                  []FlatEdsUserCommand     `mapstructure:"user_commands" required:"false" cty:"user_commands" hcl:"user_commands"`
+	Artifact                      *FlatEdsArtifact         `mapstructure:"artifact" required:"true" cty:"artifact" hcl:"artifact"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -179,11 +182,14 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"desktop_name_suffix":          &hcldec.AttrSpec{Name: "desktop_name_suffix", Type: cty.Bool, Required: false},
 		"hostname":                     &hcldec.AttrSpec{Name: "hostname", Type: cty.String, Required: false},
 		"desktop_ip":                   &hcldec.AttrSpec{Name: "desktop_ip", Type: cty.String, Required: false},
+		"volume_encryption_enabled":    &hcldec.AttrSpec{Name: "volume_encryption_enabled", Type: cty.Bool, Required: false},
+		"volume_encryption_key":        &hcldec.AttrSpec{Name: "volume_encryption_key", Type: cty.String, Required: false},
 		"end_user":                     &hcldec.BlockSpec{TypeName: "end_user", Nested: hcldec.ObjectSpec((*FlatEdsUser)(nil).HCL2Spec())},
 		"office_site":                  &hcldec.BlockSpec{TypeName: "office_site", Nested: hcldec.ObjectSpec((*FlatEdsOfficeSite)(nil).HCL2Spec())},
 		"computer_template":            &hcldec.BlockSpec{TypeName: "computer_template", Nested: hcldec.ObjectSpec((*FlatEdsComputerTemplate)(nil).HCL2Spec())},
 		"policy_group":                 &hcldec.BlockSpec{TypeName: "policy_group", Nested: hcldec.ObjectSpec((*FlatEdsPolicyGroup)(nil).HCL2Spec())},
 		"user_commands":                &hcldec.BlockListSpec{TypeName: "user_commands", Nested: hcldec.ObjectSpec((*FlatEdsUserCommand)(nil).HCL2Spec())},
+		"artifact":                     &hcldec.BlockSpec{TypeName: "artifact", Nested: hcldec.ObjectSpec((*FlatEdsArtifact)(nil).HCL2Spec())},
 	}
 	return s
 }

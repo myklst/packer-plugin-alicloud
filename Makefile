@@ -1,5 +1,4 @@
-NAME=alicloud
-BINARY=packer-plugin-${NAME}
+BINARY=packer-plugin-alicloud
 PLUGIN_FQN="$(shell grep -E '^module' <go.mod | sed -E 's/module *//')"
 
 COUNT?=1
@@ -13,7 +12,7 @@ build:
 
 dev: clean
 	@go build -ldflags="-X '${PLUGIN_FQN}/version.VersionPrerelease=dev'" -o '${BINARY}'
-	packer plugins install --path ${BINARY} "$(shell echo "${PLUGIN_FQN}" | sed 's/packer-plugin-//')"
+	@packer plugins install --path ${BINARY} "$(shell echo "${PLUGIN_FQN}" | sed 's/packer-plugin-//')"
 
 docs: install-packer-sdc
 	@rm -rf .docs docs-partials .web-docs/components
@@ -29,10 +28,10 @@ testacc: dev
 	@PACKER_ACC=1 go test -count $(COUNT) -v $(TEST) -timeout=120m
 
 testacc-builder-eds: dev
-	@PACKER_ACC=1 go test -count $(COUNT) -v ./builder/eds/builder_acc_test.go -timeout=120m -run TestAccBuilder_Eds_Basic
+	@PACKER_ACC=1 go test -count $(COUNT) -v ./builder/eds/builder_acc_test.go -timeout=120m
 
 testacc-datasource-images: dev
-	@PACKER_ACC=1 go test -count $(COUNT) -v ./datasource/image/data_acc_test.go -timeout=120m -run TestAccAliCloudDatasource
+	@PACKER_ACC=1 go test -count $(COUNT) -v ./datasource/ecsimage/data_acc_test.go -timeout=120m
 
 # Install packer sofware development command
 install-packer-sdc:
@@ -41,5 +40,7 @@ install-packer-sdc:
 plugin-check: install-packer-sdc build
 	@$(shell go env GOPATH)/bin/packer-sdc plugin-check ${BINARY}
 
+.IGNORE:
 clean:
 	@packer plugins remove "github.com/myklst/alicloud"
+	@rm -rf packer-plugin-alicloud

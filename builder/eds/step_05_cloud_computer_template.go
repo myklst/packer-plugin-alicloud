@@ -18,7 +18,6 @@ import (
 type StepCloudComputerTemplate struct {
 	RegionId                 string
 	ComputerTemplateId       string
-	SourceImageId            string
 	InstanceType             string
 	RootDiskSizeGib          int
 	RootDiskPerformanceLevel string
@@ -30,7 +29,8 @@ type StepCloudComputerTemplate struct {
 }
 
 func (s *StepCloudComputerTemplate) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client20200930").(*alieds.Client)
+	client := state.Get("alieds20200930").(*alieds.Client)
+	sourceImageId := state.Get("image_id").(string)
 	ui := state.Get("ui").(packersdk.Ui)
 
 	var err error
@@ -86,7 +86,7 @@ func (s *StepCloudComputerTemplate) Run(ctx context.Context, state multistep.Sta
 				RegionId:                 common.NilOrString(s.RegionId),
 				BundleName:               common.NilOrString(computerTemplateName),
 				DesktopType:              common.NilOrString(s.InstanceType),
-				ImageId:                  common.NilOrString(s.SourceImageId),
+				ImageId:                  common.NilOrString(sourceImageId),
 				RootDiskSizeGib:          alitea.Int32(int32(s.RootDiskSizeGib)),
 				RootDiskPerformanceLevel: common.NilOrString(s.RootDiskPerformanceLevel),
 				UserDiskSizeGib:          alitea.Int32Slice(s.UserDiskSizeGib),
@@ -109,7 +109,7 @@ func (s *StepCloudComputerTemplate) Run(ctx context.Context, state multistep.Sta
 
 func (s *StepCloudComputerTemplate) Cleanup(state multistep.StateBag) {
 	if s.autoCreated && s.ComputerTemplateId != "" {
-		client := state.Get("client20200930").(*alieds.Client)
+		client := state.Get("alieds20200930").(*alieds.Client)
 		ui := state.Get("ui").(packersdk.Ui)
 
 		ui.Say("Deleting cloud computer template...")

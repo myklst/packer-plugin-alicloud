@@ -23,5 +23,6 @@ docs-partials/
 
 # For local development
 .envrc
+packer-*
 builder/*/*.pkr.hcl
 datasource/*/*.pkr.hcl

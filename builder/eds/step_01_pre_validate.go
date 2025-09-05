@@ -67,7 +67,7 @@ func (s *StepPreValidate) validateImageName(state multistep.StateBag) error {
 		return nil
 	}
 
-	client := state.Get("client20200930").(*alieds.Client)
+	client := state.Get("alieds20200930").(*alieds.Client)
 	ui := state.Get("ui").(packersdk.Ui)
 
 	ui.Say("Prevalidating image name...")

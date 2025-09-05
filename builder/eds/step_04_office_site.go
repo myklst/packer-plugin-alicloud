@@ -29,7 +29,7 @@ type StepOfficeSite struct {
 }
 
 func (s *StepOfficeSite) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client20200930").(*alieds.Client)
+	client := state.Get("alieds20200930").(*alieds.Client)
 	ui := state.Get("ui").(packersdk.Ui)
 
 	var err error
@@ -118,7 +118,7 @@ func (s *StepOfficeSite) Run(ctx context.Context, state multistep.StateBag) mult
 
 func (s *StepOfficeSite) Cleanup(state multistep.StateBag) {
 	if s.autoCreated && s.OfficeSiteId != "" {
-		client := state.Get("client20200930").(*alieds.Client)
+		client := state.Get("alieds20200930").(*alieds.Client)
 		ui := state.Get("ui").(packersdk.Ui)
 
 		ui.Say("Deleting office network...")
