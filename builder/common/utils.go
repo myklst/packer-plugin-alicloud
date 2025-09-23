@@ -60,3 +60,10 @@ func NilOrBool(b bool) *bool {
 	}
 	return alitea.Bool(b)
 }
+
+func NilOrInt64(i int64) *int64 {
+	if i == 0 {
+		return nil
+	}
+	return alitea.Int64(i)
+}

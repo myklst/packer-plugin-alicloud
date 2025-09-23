@@ -107,7 +107,7 @@ func (d *Datasource) Execute() (cty.Value, error) {
 			ImageFamily:     common.NilOrString(d.config.ImageFamily),
 			IsPublic:        common.NilOrBool(d.config.IsPublic),
 			ImageOwnerAlias: common.NilOrString(d.config.Source),
-			ImageOwnerId:    alitea.Int64(d.config.OwnerId),
+			ImageOwnerId:    common.NilOrInt64(d.config.OwnerId),
 			OSType:          common.NilOrString(d.config.OSType),
 			Architecture:    common.NilOrString(d.config.Architecture),
 			Usage:           common.NilOrString(d.config.Usage),

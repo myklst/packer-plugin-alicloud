@@ -93,7 +93,7 @@ func (s *StepOfficeSite) Run(ctx context.Context, state multistep.StateBag) mult
 				EnableInternetAccess: common.NilOrBool(s.EnableInternetAccess),
 				Bandwidth:            alitea.Int32(s.InternetBandwidth),
 				CenId:                common.NilOrString(s.CenId),
-				CenOwnerId:           alitea.Int64(s.CenOwnerId),
+				CenOwnerId:           common.NilOrInt64(s.CenOwnerId),
 				VerifyCode:           common.NilOrString(s.CenVerifyCode),
 			})
 			return err
