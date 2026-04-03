@@ -168,7 +168,6 @@ Get-Content "$sshFolder\$sshFile" `+"`"+
 			CommandContent:  alitea.String(cmd),
 			ContentEncoding: alitea.String("PlainText"),
 			DesktopId:       common.NilOrStringSlice(computerId),
-			EndUserId:       common.NilOrString(s.EndUserId),
 			Timeout:         alitea.Int64(900),
 		})
 	}
@@ -219,7 +218,6 @@ echo "%s %s" >> ~/.ssh/authorized_keys`, pubKey, s.Comm.SSHTemporaryKeyPairName)
 		CommandContent:  alitea.String(cmd),
 		ContentEncoding: alitea.String("PlainText"),
 		DesktopId:       common.NilOrStringSlice(computerId),
-		EndUserId:       common.NilOrString(s.EndUserId),
 		Timeout:         alitea.Int64(900),
 	})
 }

@@ -154,7 +154,7 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 			EndUserId: b.config.RunConfig.EndUser.Name,
 		},
 		&StepSshKeyPair{
-			Comm:      &b.config.Comm,
+			Comm:      &b.config.RunConfig.Comm,
 			RegionId:  b.config.AlicloudRegion,
 			EndUserId: b.config.RunConfig.EndUser.Name,
 		},
@@ -174,9 +174,8 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 		}
 	}
 
-	// Only connect to the cloud computer if the office site is using a CEN,
-	// or network is not acceesable.
-	if b.config.RunConfig.OfficeSite.Cen.Id != "" {
+	// SSH only works when connected with our office network
+	if b.config.RunConfig.OfficeSite.Id != "" {
 		steps = append(steps, &communicator.StepConnect{
 			Config:    &b.config.RunConfig.Comm,
 			Host:      SshHost(),
@@ -205,10 +204,15 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 		return nil, err.(error)
 	}
 
+	artifactStateData := map[string]interface{}{"generated_data": state.Get("generated_data")}
+	if imageId, ok := state.GetOk("new_image_id"); ok {
+		artifactStateData["new_image_id"] = imageId
+	}
+
 	artifact := &Artifact{
 		RegionId:       b.config.AlicloudRegion,
 		BuilderIdValue: BuilderId,
-		StateData:      map[string]interface{}{"generated_data": state.Get("generated_data")},
+		StateData:      artifactStateData,
 		Alieds20200930: alieds20200930,
 		Alieds20210308: alieds20210308,
 	}

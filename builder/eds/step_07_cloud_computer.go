@@ -186,6 +186,7 @@ func (s *StepCloudComputer) waitUntil(ctx context.Context, state multistep.State
 	})
 	if err == nil && len(resp.Body.Desktops) > 0 {
 		state.Put("instance_ip", *resp.Body.Desktops[0].NetworkInterfaceIp)
+		time.Sleep(60 * time.Second) // Wait for the instance to be fully ready
 	}
 
 	return err

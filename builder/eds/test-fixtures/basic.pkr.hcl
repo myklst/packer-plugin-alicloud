@@ -1,8 +1,10 @@
+# Test with: make dev && packer build ./builder/eds/test-fixtures/basic.pkr.hcl
+
 packer {
   required_plugins {
     st-alicloud = {
       source  = "github.com/myklst/alicloud"
-      version = "0.0.1-dev"
+      version = "0.0.1"
     }
   }
 }
@@ -23,14 +25,14 @@ variable "secret_key" {
   sensitive = true
 }
 
-source "alicloud-eds" "test" {
+source "st-alicloud-eds" "test" {
   region     = var.region
   access_key = var.access_key
   secret_key = var.secret_key
 
   end_user {
-    name     = "packer-user-01"
-    email    = "packer-user-01@example.com"
+    name  = "packer-user-01"
+    email = "packer-user-01@example.com"
   }
 
   office_site {
@@ -84,10 +86,10 @@ EOL
 }
 
 build {
-  sources = ["source.alicloud-eds.test"]
+  sources = ["source.st-alicloud-eds.test"]
 
-# provisioner "breakpoint" {
-#   disable = false
-#   note    = "this is a breakpoint"
-# }
+  # provisioner "breakpoint" {
+  #   disable = false
+  #   note    = "this is a breakpoint"
+  # }
 }

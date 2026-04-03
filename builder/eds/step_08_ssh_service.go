@@ -74,8 +74,7 @@ sudo ufw allow 22/tcp`
 		CommandContent:  alitea.String(cmd),
 		ContentEncoding: alitea.String("PlainText"),
 		DesktopId:       common.NilOrStringSlice(computerId),
-		EndUserId:       common.NilOrString(s.EndUserId),
-		Timeout:         alitea.Int64(900),
+		Timeout:         alitea.Int64(1800),
 	})
 }
 
@@ -104,8 +103,8 @@ Remove-NetFirewallRule @firewallParams`
 	case "linux":
 		runcmdType = "RunShellScript"
 		cmd = `
-# Allow SSH traffic through firewall
-sudo ufw allow 22/tcp`
+# Deny SSH traffic through firewall
+sudo ufw deny 22/tcp`
 	default:
 		ui.Errorf("Unsupported OS type: %s", osType)
 		return
@@ -117,7 +116,6 @@ sudo ufw allow 22/tcp`
 		CommandContent:  alitea.String(cmd),
 		ContentEncoding: alitea.String("PlainText"),
 		DesktopId:       common.NilOrStringSlice(computerId),
-		EndUserId:       common.NilOrString(s.EndUserId),
 		Timeout:         alitea.Int64(900),
 	})
 }

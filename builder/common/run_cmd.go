@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -35,10 +36,21 @@ func RunCommand(ctx context.Context, state multistep.StateBag, req *alieds.RunCo
 		RetryDelay: (&retry.Backoff{InitialBackoff: 1 * time.Second, MaxBackoff: 30 * time.Second, Multiplier: 2}).Linear,
 	}.Run(ctx, func(ctx context.Context) error {
 		resp, err = edsClient.RunCommand(req)
+
+		if err != nil {
+			log.Printf("[ERROR] RunCommand failed: %v", err)
+			return err
+		}
+
+		if resp == nil || resp.Body == nil || resp.Body.InvokeId == nil {
+			return fmt.Errorf("invalid RunCommand response")
+		}
+
 		log.Printf("[DEBUG] Command triggered, invoke_id: %s...", *resp.Body.InvokeId)
 		return err
 	})
 	if err != nil {
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 
@@ -62,12 +74,14 @@ func waitUntilCommandFinished(state multistep.StateBag, client *alieds.Client, r
 			retryable, err2 := IsRetryableError(err)
 			if !retryable {
 				ui.Errorf("Failed to describe invocation result: %s", err2)
+				state.Put("error", fmt.Errorf("Failed to describe invocation result: %s", err2))
 				return multistep.ActionHalt
 			}
 			retry = true
 		} else {
 			if len(resp.Body.Invocations) == 0 {
 				ui.Errorf("Invocation (%s) not found", *invokeId)
+				state.Put("error", fmt.Errorf("Invocation (%s) not found", *invokeId))
 				return multistep.ActionHalt
 			}
 
@@ -75,6 +89,7 @@ func waitUntilCommandFinished(state multistep.StateBag, client *alieds.Client, r
 			retry = status == "Pending" || status == "Running"
 			if !retry && status != "Success" {
 				log.Printf("[ERROR] Invocation (%s) failed with status: %s", *invokeId, status)
+				state.Put("error", fmt.Errorf("Command Execution failed. Status: %s, ErrorInfo: %s", status, *resp.Body.Invocations[0].InvokeDesktops[0].ErrorInfo))
 				return multistep.ActionHalt
 			}
 		}

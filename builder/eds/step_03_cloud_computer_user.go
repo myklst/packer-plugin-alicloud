@@ -3,6 +3,7 @@ package eds
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	alieds "github.com/alibabacloud-go/eds-user-20210308/client"
@@ -69,6 +70,7 @@ func (s *StepCloudComputerUser) Run(ctx context.Context, state multistep.StateBa
 		return err
 	})
 	if err != nil {
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 
@@ -77,7 +79,12 @@ func (s *StepCloudComputerUser) Run(ctx context.Context, state multistep.StateBa
 	ui.Sayf("Alicloud EDS Password: %s", password)
 	ui.Say("====================================")
 
-	s.Comm.SSHUsername = s.User.Name
+	osType := state.Get("os_type").(string)
+	if !strings.EqualFold(osType, "linux") {
+		if s.Comm.SSHUsername == "" || strings.EqualFold(s.Comm.SSHUsername, "root") {
+			s.Comm.SSHUsername = s.User.Name
+		}
+	}
 	state.Put("cloud_computer_user", s.User.Name)
 
 	return multistep.ActionContinue

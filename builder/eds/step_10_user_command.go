@@ -34,7 +34,6 @@ func (s *StepUserCommand) Run(ctx context.Context, state multistep.StateBag) mul
 		CommandContent:  common.NilOrString(s.CommandContent),
 		ContentEncoding: common.NilOrString(s.ContentEncoding),
 		DesktopId:       common.NilOrStringSlice(cloudComputerId),
-		EndUserId:       common.NilOrString(s.EndUserId),
 		CommandRole:     common.NilOrString(s.CommandRole),
 	}
 	if s.Timeout > 0 {

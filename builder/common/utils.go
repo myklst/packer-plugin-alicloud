@@ -3,6 +3,7 @@ package common
 import (
 	"math/rand"
 	"net/url"
+	"strings"
 	"time"
 
 	aliclient "github.com/alibabacloud-go/darabonba-openapi/v2/client"
@@ -20,6 +21,10 @@ func RandomString(length int) string {
 }
 
 func IsRetryableError(err error) (bool, error) {
+	// Transient condition while CloudAssistant is initializing.
+	if strings.Contains(err.Error(), "CloudAssistant.NotReady") || strings.Contains(err.Error(), "CloudAssistant not ready") {
+		return true, err
+	}
 	if aliErr, ok := err.(*aliclient.AlibabaCloudError); ok {
 		return false, aliErr
 	}
