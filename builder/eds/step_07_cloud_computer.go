@@ -90,6 +90,7 @@ func (s *StepCloudComputer) Run(ctx context.Context, state multistep.StateBag) m
 		return err
 	})
 	if err != nil {
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 
@@ -97,7 +98,10 @@ func (s *StepCloudComputer) Run(ctx context.Context, state multistep.StateBag) m
 	s.instanceId = *computer[0]
 	state.Put("instance_id", *computer[0])
 
-	s.waitUntil(ctx, state, "Running", client)
+	if err := s.waitUntil(ctx, state, "Running", client); err != nil {
+		state.Put("error", err)
+		return multistep.ActionHalt
+	}
 
 	return multistep.ActionContinue
 }

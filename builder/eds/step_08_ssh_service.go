@@ -2,6 +2,7 @@ package eds
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	alieds "github.com/alibabacloud-go/ecd-20200930/v5/client"
@@ -64,7 +65,7 @@ New-ItemProperty @shellParams`
 # Allow SSH traffic through firewall
 sudo ufw allow 22/tcp`
 	default:
-		ui.Errorf("Unsupported OS type: %s", osType)
+		state.Put("error", fmt.Errorf("unsupported OS type: %s", osType))
 		return multistep.ActionHalt
 	}
 

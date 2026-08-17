@@ -55,11 +55,12 @@ func (s *StepOfficeSite) Run(ctx context.Context, state multistep.StateBag) mult
 			return err
 		})
 		if err != nil {
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 
 		if len(resp.Body.OfficeSites) <= 0 {
-			ui.Errorf("Office network %s is not found", s.OfficeSiteId)
+			state.Put("error", fmt.Errorf("Office network %s is not found", s.OfficeSiteId))
 			return multistep.ActionHalt
 		}
 	} else {
@@ -99,6 +100,7 @@ func (s *StepOfficeSite) Run(ctx context.Context, state multistep.StateBag) mult
 			return err
 		})
 		if err != nil {
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 
@@ -107,6 +109,7 @@ func (s *StepOfficeSite) Run(ctx context.Context, state multistep.StateBag) mult
 
 		if err := s.waitUntil(ctx, "REGISTERED", client); err != nil {
 			ui.Say("Waiting for office network to be registered...")
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 

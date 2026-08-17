@@ -62,6 +62,7 @@ func (s *StepCloudComputerTemplate) Run(ctx context.Context, state multistep.Sta
 			return err
 		})
 		if err != nil {
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 	} else {
@@ -96,6 +97,7 @@ func (s *StepCloudComputerTemplate) Run(ctx context.Context, state multistep.Sta
 			return err
 		})
 		if err != nil {
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 
