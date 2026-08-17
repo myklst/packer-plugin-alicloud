@@ -45,6 +45,7 @@ func (s *StepSshKeyPair) Run(ctx context.Context, state multistep.StateBag) mult
 		privateKeyBytes, err := s.Comm.ReadSSHPrivateKeyFile()
 		if err != nil {
 			ui.Errorf("Failed to read existing SSH private key file: %s", err)
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 
@@ -74,6 +75,7 @@ func (s *StepSshKeyPair) Run(ctx context.Context, state multistep.StateBag) mult
 	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		ui.Errorf("Failed to generate Ed25519 key: %v", err)
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 
@@ -81,6 +83,7 @@ func (s *StepSshKeyPair) Run(ctx context.Context, state multistep.StateBag) mult
 	pemBlock, err := ssh.MarshalPrivateKey(privateKey, "OPENSSH PRIVATE KEY")
 	if err != nil {
 		ui.Errorf("Failed to marshal SSH private key: %v", err)
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 	privatePem := pem.EncodeToMemory(pemBlock)
@@ -89,6 +92,7 @@ func (s *StepSshKeyPair) Run(ctx context.Context, state multistep.StateBag) mult
 	sshPublicKey, err := ssh.NewPublicKey(publicKey)
 	if err != nil {
 		ui.Errorf("Failed to create SSH public key: %v", err)
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 	publicAuthorizedKey := ssh.MarshalAuthorizedKey(sshPublicKey)
@@ -111,6 +115,7 @@ func (s *StepSshKeyPair) Run(ctx context.Context, state multistep.StateBag) mult
 	f, err := os.Create(s.debugKeyPath)
 	if err != nil {
 		ui.Errorf("Error saving debug key: %s", err)
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 	defer f.Close()
@@ -118,6 +123,7 @@ func (s *StepSshKeyPair) Run(ctx context.Context, state multistep.StateBag) mult
 	// Write the key out
 	if _, err := f.Write(s.sshKeyPair.PrivKey); err != nil {
 		ui.Errorf("Error saving debug key: %s", err)
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 
@@ -125,6 +131,7 @@ func (s *StepSshKeyPair) Run(ctx context.Context, state multistep.StateBag) mult
 	if runtime.GOOS != "windows" {
 		if err := f.Chmod(0600); err != nil {
 			ui.Errorf("Error setting permissions of debug key: %s", err)
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 	}
@@ -208,7 +215,7 @@ touch ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 echo "%s %s" >> ~/.ssh/authorized_keys`, pubKey, s.Comm.SSHTemporaryKeyPairName)
 	default:
-		ui.Errorf("Unsupported OS type: %s", osType)
+		state.Put("error", fmt.Errorf("unsupported OS type: %s", osType))
 		return multistep.ActionHalt
 	}
 

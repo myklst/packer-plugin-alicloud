@@ -2,6 +2,7 @@ package eds
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	alieds "github.com/alibabacloud-go/ecd-20200930/v5/client"
@@ -56,16 +57,17 @@ func (s *StepSourceImageInfo) Run(ctx context.Context, state multistep.StateBag)
 		return err
 	})
 	if err != nil {
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 
 	images := resp.Body.Images
 	if len(images) <= 0 {
-		ui.Errorf("Image not found.")
+		state.Put("error", fmt.Errorf("image not found"))
 		return multistep.ActionHalt
 	}
 	if len(resp.Body.Images) > 1 {
-		ui.Errorf("Multiple images found: %d", len(resp.Body.Images))
+		state.Put("error", fmt.Errorf("multiple images found: %d", len(resp.Body.Images)))
 		return multistep.ActionHalt
 	}
 

@@ -49,11 +49,12 @@ func (s *StepPolicyGroup) Run(ctx context.Context, state multistep.StateBag) mul
 			return err
 		})
 		if err != nil {
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 
 		if len(resp.Body.DescribePolicyGroups) <= 0 {
-			ui.Errorf("Policy group %s not found", s.PolicyGroupId)
+			state.Put("error", fmt.Errorf("Policy group %s not found", s.PolicyGroupId))
 			return multistep.ActionHalt
 		}
 	} else {
@@ -93,6 +94,7 @@ func (s *StepPolicyGroup) Run(ctx context.Context, state multistep.StateBag) mul
 			return err
 		})
 		if err != nil {
+			state.Put("error", err)
 			return multistep.ActionHalt
 		}
 

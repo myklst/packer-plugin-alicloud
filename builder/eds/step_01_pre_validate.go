@@ -29,12 +29,12 @@ func (s *StepPreValidate) Run(ctx context.Context, state multistep.StateBag) mul
 	}
 
 	if err := s.validateRegions(state); err != nil {
-		ui.Error(err.Error())
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 
 	if err := s.validateImageName(state); err != nil {
-		ui.Error(err.Error())
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 

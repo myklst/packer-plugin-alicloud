@@ -54,6 +54,7 @@ func (s *StepCreateImage) Run(ctx context.Context, state multistep.StateBag) mul
 		return err
 	})
 	if err != nil {
+		state.Put("error", err)
 		return multistep.ActionHalt
 	}
 
