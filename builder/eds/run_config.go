@@ -36,6 +36,7 @@ type EdsOfficeSite struct {
 	Id             string                      `mapstructure:"id" required:"false"`
 	Name           string                      `mapstructure:"name" required:"false"`
 	CidrBlock      string                      `mapstructure:"cidr_block" required:"false"`
+	SubnetId       string                      `mapstructure:"subnet_id" required:"false"`
 	InternetAccess EdsOfficeSiteInternetAccess `mapstructure:"internet_access" required:"false"`
 	Cen            EdsOfficeSiteCen            `mapstructure:"cen" required:"false"`
 }
