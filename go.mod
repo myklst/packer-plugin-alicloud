@@ -5,11 +5,11 @@ go 1.23.0
 toolchain go1.24.6
 
 require (
-	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.11
-	github.com/alibabacloud-go/ecd-20200930/v5 v5.12.5
+	github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.1
+	github.com/alibabacloud-go/ecd-20200930/v5 v5.26.5
 	github.com/alibabacloud-go/ecs-20140526/v7 v7.2.0
 	github.com/alibabacloud-go/eds-user-20210308 v1.6.2
-	github.com/alibabacloud-go/tea v1.3.11
+	github.com/alibabacloud-go/tea v1.5.0
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/packer-plugin-alicloud v1.1.2
 	github.com/hashicorp/packer-plugin-sdk v0.6.2
@@ -30,7 +30,7 @@ require (
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
 	github.com/alibabacloud-go/debug v1.0.1 // indirect
 	github.com/alibabacloud-go/openapi-util v0.1.1 // indirect
-	github.com/alibabacloud-go/tea-utils/v2 v2.0.7 // indirect
+	github.com/alibabacloud-go/tea-utils/v2 v2.0.9 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v1.62.742 // indirect
 	github.com/aliyun/credentials-go v1.4.5 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
@@ -51,6 +51,7 @@ require (
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/consul/api v1.25.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

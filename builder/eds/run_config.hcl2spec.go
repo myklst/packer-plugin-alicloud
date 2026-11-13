@@ -124,6 +124,7 @@ type FlatEdsOfficeSite struct {
 	Id             *string                          `mapstructure:"id" required:"false" cty:"id" hcl:"id"`
 	Name           *string                          `mapstructure:"name" required:"false" cty:"name" hcl:"name"`
 	CidrBlock      *string                          `mapstructure:"cidr_block" required:"false" cty:"cidr_block" hcl:"cidr_block"`
+	SubnetId       *string                          `mapstructure:"subnet_id" required:"false" cty:"subnet_id" hcl:"subnet_id"`
 	InternetAccess *FlatEdsOfficeSiteInternetAccess `mapstructure:"internet_access" required:"false" cty:"internet_access" hcl:"internet_access"`
 	Cen            *FlatEdsOfficeSiteCen            `mapstructure:"cen" required:"false" cty:"cen" hcl:"cen"`
 }
@@ -143,6 +144,7 @@ func (*FlatEdsOfficeSite) HCL2Spec() map[string]hcldec.Spec {
 		"id":              &hcldec.AttrSpec{Name: "id", Type: cty.String, Required: false},
 		"name":            &hcldec.AttrSpec{Name: "name", Type: cty.String, Required: false},
 		"cidr_block":      &hcldec.AttrSpec{Name: "cidr_block", Type: cty.String, Required: false},
+		"subnet_id":       &hcldec.AttrSpec{Name: "subnet_id", Type: cty.String, Required: false},
 		"internet_access": &hcldec.BlockSpec{TypeName: "internet_access", Nested: hcldec.ObjectSpec((*FlatEdsOfficeSiteInternetAccess)(nil).HCL2Spec())},
 		"cen":             &hcldec.BlockSpec{TypeName: "cen", Nested: hcldec.ObjectSpec((*FlatEdsOfficeSiteCen)(nil).HCL2Spec())},
 	}

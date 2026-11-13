@@ -28,6 +28,7 @@ type StepCloudComputer struct {
 	DesktopMemberIp         string
 	VolumeEncryptionEnabled bool
 	VolumeEncryptionKey     string
+	SubnetId                string
 
 	instanceId string
 }
@@ -86,6 +87,7 @@ func (s *StepCloudComputer) Run(ctx context.Context, state multistep.StateBag) m
 			VolumeEncryptionEnabled: common.NilOrBool(s.VolumeEncryptionEnabled),
 			VolumeEncryptionKey:     common.NilOrString(s.VolumeEncryptionKey),
 			PromotionId:             common.NilOrString(s.PromotionId),
+			SubnetId:                common.NilOrString(s.SubnetId),
 		})
 		return err
 	})

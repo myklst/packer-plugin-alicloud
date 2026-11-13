@@ -148,6 +148,7 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 			DesktopMemberIp:         b.config.RunConfig.DesktopIp,
 			VolumeEncryptionEnabled: b.config.RunConfig.VolumeEncryptionEnabled,
 			VolumeEncryptionKey:     b.config.RunConfig.VolumeEncryptionKey,
+			SubnetId:                b.config.RunConfig.OfficeSite.SubnetId,
 		},
 		&StepSshService{
 			RegionId:  b.config.AlicloudRegion,
