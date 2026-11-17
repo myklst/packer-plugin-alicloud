@@ -39,6 +39,12 @@ builds:
       - "386"
       - arm
       - arm64
+    # goreleaser v1.26 wrongly treats windows/arm as a buildable target, but
+    # Go 1.25+ removed that port entirely ("go: unsupported GOOS/GOARCH pair
+    # windows/arm"). Fixed upstream in goreleaser v2; the release workflow
+    # resolves goreleaser-action "~> v1" to v1.26, so skip it (and other
+    # unsupported GOOS/GOARCH pairs) explicitly.
+    # https://github.com/goreleaser/goreleaser/issues/6486
     ignore:
       - goos: openbsd
         goarch: arm64
@@ -46,6 +52,16 @@ builds:
         goarch: "386"
       - goos: linux
         goarch: amd64
+      - goos: windows
+        goarch: arm
+      - goos: darwin
+        goarch: arm
+      - goos: solaris
+        goarch: "386"
+      - goos: solaris
+        goarch: arm
+      - goos: solaris
+        goarch: arm64
     binary: "{{ .ProjectName }}_v{{ .Version }}_{{ .Env.API_VERSION }}_{{ .Os }}_{{ .Arch }}"
 archives:
   - format: zip
