@@ -46,6 +46,16 @@ builds:
         goarch: "386"
       - goos: linux
         goarch: amd64
+      - goos: windows
+        goarch: arm
+      - goos: darwin
+        goarch: arm
+      - goos: solaris
+        goarch: "386"
+      - goos: solaris
+        goarch: arm
+      - goos: solaris
+        goarch: arm64
     binary: "{{ .ProjectName }}_v{{ .Version }}_{{ .Env.API_VERSION }}_{{ .Os }}_{{ .Arch }}"
 archives:
   - format: zip
